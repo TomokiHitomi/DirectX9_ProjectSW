@@ -722,31 +722,31 @@ VOID CSkinMesh::CreateFrameArray(LPD3DXFRAME _pFrame) {
 //=============================================================================
 // 更新処理
 //=============================================================================
-VOID CSkinMesh::Update(D3DXMATRIX _World, int nChange) {
+VOID CSkinMesh::Update(D3DXMATRIX _World) {
 	//押しっぱなしによる連続切り替え防止
-	//static bool PushFlg = false; //ここでは仮でフラグを使用するが、本来はメンバ変数などにする
-	//							 //アニメーション変更チェック
-	//if ((GetAsyncKeyState(VK_LEFT) & 0x8000) || (GetAsyncKeyState(VK_RIGHT) & 0x8000)) {
-	//	if (GetAsyncKeyState(VK_LEFT) & 0x8000) {
-	//		if (PushFlg == false) {
-	//			int Num = GetAnimTrack() - 1;
-	//			if (Num < 0)Num = 0;
-	//			
-	//			(Num, m_fShiftTime);
-	//		}
-	//	}
-	//	if (GetAsyncKeyState(VK_RIGHT) & 0x8000) {
-	//		if (PushFlg == false) {
-	//			int Num = GetAnimTrack() + 1;
-	//			if ((DWORD)Num > m_pAnimController->GetNumAnimationSets())Num = m_pAnimController->GetNumAnimationSets();
-	//			ChangeAnim(Num, m_fShiftTime);
-	//		}
-	//	}
-	//	PushFlg = true;
-	//}
-	//else {
-	//	PushFlg = false;
-	//}
+	static bool PushFlg = false; //ここでは仮でフラグを使用するが、本来はメンバ変数などにする
+								 //アニメーション変更チェック
+	if ((GetAsyncKeyState(VK_LEFT) & 0x8000) || (GetAsyncKeyState(VK_RIGHT) & 0x8000)) {
+		if (GetAsyncKeyState(VK_LEFT) & 0x8000) {
+			if (PushFlg == false) {
+				int Num = GetAnimTrack() - 1;
+				if (Num < 0)Num = 0;
+				
+				(Num, m_fShiftTime);
+			}
+		}
+		if (GetAsyncKeyState(VK_RIGHT) & 0x8000) {
+			if (PushFlg == false) {
+				int Num = GetAnimTrack() + 1;
+				if ((DWORD)Num > m_pAnimController->GetNumAnimationSets())Num = m_pAnimController->GetNumAnimationSets();
+				ChangeAnim(Num, m_fShiftTime);
+			}
+		}
+		PushFlg = true;
+	}
+	else {
+		PushFlg = false;
+	}
 
 	// モーションブレンド確認
 	m_fCurWeight += m_fShiftTime;
@@ -767,37 +767,6 @@ VOID CSkinMesh::Update(D3DXMATRIX _World, int nChange) {
 	m_World = _World;
 	//アニメーション時間を更新
 	m_AnimeTime++;
-
-	LPD3DXMESHCONTAINER pMeshContainer = m_cHierarchy.pMeshContainerTest;
-	int NumMaterials = pMeshContainer->NumMaterials;
-
-	if (NumMaterials > 0 && nChange != CSM_CHANGE_NON)
-	{
-		D3DXCOLOR tempColor;
-		if (nChange == CSM_CHANGE_RED)
-		{
-			tempColor = D3DXCOLOR( 1.0f, 0.5f, 0.5f, 1.0f );
-		}
-		if (nChange == CSM_CHANGE_BLUE)
-		{
-			tempColor = D3DXCOLOR(0.5f, 0.5f, 1.0f, 1.0f );
-		}
-		////外部引数のマテリアルデータアドレスをメッシュコンテナに格納
-		//memcpy(pMeshContainer->pMaterials, pMaterials, sizeof(D3DXMATERIAL) * NumMaterials);
-		//マテリアル数分ループさせる
-		for (int iMaterial = 0; (DWORD)iMaterial < NumMaterials; iMaterial++)
-		{
-			//テクスチャのファイル名がNULLでなければ(テクスチャデータがあれば)
-			if (pMeshContainer->pMaterials[iMaterial].pTextureFilename != NULL)
-			{
-				if (iMaterial == 3 || iMaterial == 5)
-				{
-					pMeshContainer->pMaterials[iMaterial].MatD3D.Diffuse = tempColor;
-					pMeshContainer->pMaterials[iMaterial].MatD3D.Ambient = tempColor;
-				}
-			}
-		}
-	}
 }
 
 //=============================================================================

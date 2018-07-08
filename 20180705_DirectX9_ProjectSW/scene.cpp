@@ -98,6 +98,7 @@ void SceneManager::Init(HINSTANCE hInst, HWND hWnd)
 	InitInput(hInst, hWnd);	// 入力
 	InitSound(hWnd);		// サウンド
 	InitFade();				// フェード
+	InitCamera();			// カメラ(終了処理はシーンマネージャーのみ）
 
 	ChangeScene(m_eScene);	// 初期シーン設定
 

@@ -112,7 +112,7 @@ public:
 	//解放処理
 	VOID Release();
 	//更新処理
-	VOID Update(D3DXMATRIX, int nChange);
+	VOID Update(D3DXMATRIX);
 	//描画処理
 	VOID Draw(LPDIRECT3DDEVICE9 lpD3DDevice);
 	//オブジェクトのアニメーション変更( メッシュオブジェクトの操作用番号, 変更するアニメーション番号 )
@@ -170,12 +170,5 @@ private:
 	FLOAT	m_fShiftTime;			// シフトするのにかかる時間
 	FLOAT	m_fCurWeight;			// 現在のウェイト時間
 	DWORD	m_OldTrack;				// 変更前アニメーショントラック
-};
-
-enum
-{
-	CSM_CHANGE_NON,
-	CSM_CHANGE_RED,
-	CSM_CHANGE_BLUE
 };
 #endif
