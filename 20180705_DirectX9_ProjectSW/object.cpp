@@ -19,6 +19,7 @@
 // マクロ定義
 //*****************************************************************************
 Object	*Object::s_pRoot = NULL;
+int		Object::nObjectCount = 0;
 
 //*****************************************************************************
 // プロトタイプ宣言
@@ -73,12 +74,18 @@ void Object::Release(void)
 //=============================================================================
 Object::Object(void)
 {
+	// オブジェクトカウンタをインクリメント
+	nObjectCount++;
+
 	// プロパティの初期化
-	this->m_pPrev = NULL;
-	this->m_pNext = NULL;
+	this->m_pPrev = NULL;			// 前ポインタの初期化
+	this->m_pNext = NULL;			// 後ポインタの初期化
+
+	this->eMainPriority = Normal;	// メインプライオリティをNormal
+	this->eSubPriority = Normal;	// サブプライオリティをNormal
 
 	// ルートポインタをpListに格納
-	Object **pList = &s_pRoot;
+	Object **pList = GetObjectRootAdr();
 	Object **pPrevTemp = NULL;
 
 	// リスト構造形成ループ
@@ -116,7 +123,8 @@ Object::Object(void)
 //=============================================================================
 Object::~Object(void)
 {
-
+	// オブジェクトカウンタをデクリメント
+	nObjectCount--;
 }
 
 //=============================================================================
@@ -124,18 +132,15 @@ Object::~Object(void)
 //=============================================================================
 void Object::UpdateAll(void)
 {
-	int	nDebugCount = 0;
-
 	Object *pList = Object::GetObjectRoot();
 
 	while (pList != NULL)
 	{
 		pList->Update();
 		pList = pList->GetObjectNext();
-		nDebugCount++;
 	}
 
-	PrintDebugProc("【 LIST_TEST : %d 】\n", nDebugCount);
+	PrintDebugProc("【 LIST_TEST : %d 】\n", nObjectCount);
 }
 
 //=============================================================================
@@ -145,6 +150,7 @@ void Object::DrawAll(void)
 {
 	Object *pList = Object::GetObjectRoot();
 
+	
 	while (pList != NULL)
 	{
 		pList->Draw();
