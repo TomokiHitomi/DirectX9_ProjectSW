@@ -18,7 +18,9 @@
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
-Object	*Object::s_pRoot = NULL;
+Object	*Object::s_pRoot[ObjectRootMax] = { NULL, NULL };
+//Object	*Object::s_pRootUpdate = NULL;
+//Object	*Object::s_pRootDraw = NULL;
 int		Object::nObjectCount = 0;
 
 //*****************************************************************************
@@ -43,28 +45,37 @@ int		Object::nObjectCount = 0;
 //=============================================================================
 void Object::Release(void)
 {
+	// ルート格納用ポインタ
+	Object	**pRoot = NULL;
+
 	// リスト構造の再結合処理
-
-	// 前ポインタがNULLではない
-	if (this->m_pPrev != NULL)
+	for (unsigned int i = 0; i < ObjectRootMax; i++)
 	{
-		// 前ポインタが指す次ポインタを
-		// 自らが格納している次ポインタに差し替える
-		this->m_pPrev->m_pNext = this->m_pNext;
-	}
-	// 前ポインタがNULL
-	else
-	{	// ルートポインタをNULL
-		s_pRoot = NULL;
+		// ルートポインタを取得
+		pRoot = GetObjectRootAdr(ObjectRoot(i));
+
+		// 前ポインタがNULLではない
+		if ((this->m_pPrev[i]) != NULL)
+		{
+			// 前ポインタが指す次ポインタを
+			// 自らが格納している次ポインタに差し替える
+			(this->m_pPrev[i])->m_pNext[i] = this->m_pNext[i];
+		}
+		// 前ポインタがNULL
+		else
+		{	// ルートポインタをNULL
+			*pRoot = NULL;
+		}
+
+		// 次ポインタがNULLではない
+		if (this->m_pNext[i] != NULL)
+		{
+			// 次ポインタが指す前ポインタを
+			// 自らが格納している前ポインタに差し替える
+			this->m_pNext[i]->m_pPrev[i] = this->m_pPrev[i];
+		}
 	}
 
-	// 次ポインタがNULLではない
-	if (this->m_pNext != NULL)
-	{
-		// 次ポインタが指す前ポインタを
-		// 自らが格納している前ポインタに差し替える
-		this->m_pNext->m_pPrev = this->m_pPrev;
-	}
 
 	delete this;
 }
@@ -78,11 +89,15 @@ Object::Object(void)
 	nObjectCount++;
 
 	// プロパティの初期化
-	this->m_pPrev = NULL;			// 前ポインタの初期化
-	this->m_pNext = NULL;			// 後ポインタの初期化
+	for (unsigned int i = 0; i < ObjectRootMax; i++)
+	{
+		this->m_pPrev[i] = NULL;			// 前ポインタの初期化
+		this->m_pNext[i] = NULL;			// 後ポインタの初期化
+		this->m_ePriority[i] = Normal;
+	}
 
-	this->eMainPriority = Normal;	// メインプライオリティをNormalで初期化
-	this->eSubPriority = Normal;	// サブプライオリティをNormalで初期化
+	//this->eUpdatePriority = Normal;	// メインプライオリティをNormalで初期化
+	//this->eDrawPriority = Normal;	// サブプライオリティをNormalで初期化
 }
 
 
@@ -97,16 +112,16 @@ Object::~Object(void)
 
 //=============================================================================
 // オブジェクトIDとプライオリティの設定処理
+// 引数：ID, 更新プライオリティ, 描画プライオリティ
 //=============================================================================
-void Object::SetIdAndPriority(ObjectID eObjId, Priority eMain, Priority eSub)
+void Object::SetIdAndPriority(ObjectID eObjId, Priority eUpdateP, Priority eDrawP)
 {
-	//// プライオリティテスト用
-	eSub = Priority(11 - Priority(nObjectCount) - eSub);
+	// プライオリティテスト用
 	eObjId = ObjectID(nObjectCount);
 
-	this->SetObjectId(eObjId);		// オブジェクトIDを設定
-	this->SetMainPriority(eMain);	// メインプライオリティを設定
-	this->SetSubPriority(eSub);		// サブプライオリティを設定
+	this->SetObjectId(eObjId);							// オブジェクトIDを設定
+	this->SetPriority(UpdateRoot, eUpdateP);	// 更新プライオリティを設定
+	this->SetPriority(DrawRoot, eDrawP);		// 描画プライオリティを設定
 
 	// オブジェクトをリスト追加処理
 	AppendList();
@@ -117,62 +132,58 @@ void Object::SetIdAndPriority(ObjectID eObjId, Priority eMain, Priority eSub)
 //=============================================================================
 void Object::AppendList(void)
 {
-	// ルートポインタをpListに格納
-	Object **pList = GetObjectRootAdr();
+	Object **pList = NULL;
 	Object **pPrevTemp = NULL;
 
-	// リスト構造形成ループ
-	while (true)
+	for (unsigned int i = 0; i < ObjectRootMax; i++)
 	{
-		// pListポインタが設定済みならば
-		if (*pList != NULL)
+		// ルートポインタをpListに格納
+		pList = GetObjectRootAdr(ObjectRoot(i));
+
+		// リスト構造形成ループ
+		while (true)
 		{
-			// メインプライオリティが高い、または同じ
-			if ((*pList)->eMainPriority >= this->eMainPriority)
+			// pListポインタが設定済みならば
+			if (*pList != NULL)
 			{
-				// メインプライオリティが同じ、かつサブプライオリティが低い
-				if ((*pList)->eMainPriority == this->eMainPriority
-					&& (*pList)->eSubPriority < this->eSubPriority)
-				{
-					// 何もしない
-				}
-				else
+				// プライオリティが高い
+				if ((*pList)->m_ePriority[i] > this->m_ePriority[i])
 				{
 					// 割り込み処理
 					// pListの前ポインタに自らを格納
-					(*pList)->m_pPrev = this;
+					(*pList)->m_pPrev[i] = this;
 					// pListがルート以外
-					if (*pList != s_pRoot)
+					if (*pList != s_pRoot[i])
 					{
 						// 前ポインタにpPrevTempを設定
-						this->m_pPrev = *pPrevTemp;
+						this->m_pPrev[i] = *pPrevTemp;
 					}
-					this->m_pNext = *pList;
+					this->m_pNext[i] = *pList;
 					// pListに自らを格納
 					*pList = this;
-					return;
+					break;
 				}
+
+				// 前ポインタ候補としてpListを保管
+				pPrevTemp = pList;
+
+				// 次ポインタをpListに格納しなおす
+				pList = &(*pList)->m_pNext[i];
 			}
-
-			// 前ポインタ候補としてpListを保管
-			pPrevTemp = pList;
-
-			// 次ポインタをpListに格納しなおす
-			pList = &(*pList)->m_pNext;
-		}
-		// 次ポインタが未設定ならば
-		else if (*pList == NULL)
-		{
-			// pListがルート以外
-			if (*pList != s_pRoot)
+			// 次ポインタが未設定ならば
+			else if (*pList == NULL)
 			{
-				// 前ポインタにpPrevTempを設定
-				this->m_pPrev = *pPrevTemp;
-			}
+				// pListがルート以外
+				if (*pList != s_pRoot[i])
+				{
+					// 前ポインタにpPrevTempを設定
+					this->m_pPrev[i] = *pPrevTemp;
+				}
 
-			// pListの指すRootまたはNextに自らを格納
-			*pList = this;
-			return;
+				// pListの指すRootまたはNextに自らを格納
+				*pList = this;
+				break;
+			}
 		}
 	}
 }
@@ -182,7 +193,7 @@ void Object::AppendList(void)
 //=============================================================================
 void Object::UpdateAll(void)
 {
-	Object *pList = Object::GetObjectRoot();
+	Object *pList = Object::GetObjectRoot(UpdateRoot);
 
 #ifdef _DEBUG
 	PrintDebugProc("【 ObjectCount : %d 】\n", nObjectCount);
@@ -193,11 +204,11 @@ void Object::UpdateAll(void)
 		pList->Update();
 
 #ifdef _DEBUG
-		PrintDebugProc("[ ID : %d  PriMain : %d  PriSub : %d] \n",
-			pList->GetObjectId(), pList->GetMainPriority(),pList->GetSubPriority());
+		PrintDebugProc("Update[ ID : %d  Pri : %d] \n",
+			pList->GetObjectId(), pList->GetPriority(UpdateRoot));
 #endif
 
-		pList = pList->GetObjectNext();
+		pList = pList->GetObjectNext(UpdateRoot);
 	}
 #ifdef _DEBUG
 	PrintDebugProc("\n");
@@ -209,14 +220,21 @@ void Object::UpdateAll(void)
 //=============================================================================
 void Object::DrawAll(void)
 {
-	Object *pList = Object::GetObjectRoot();
+	Object *pList = Object::GetObjectRoot(DrawRoot);
 
 	
 	while (pList != NULL)
 	{
 		pList->Draw();
-		pList = pList->GetObjectNext();
+#ifdef _DEBUG
+		PrintDebugProc(" Draw [ ID : %d  Pri : %d] \n",
+			pList->GetObjectId(), pList->GetPriority(DrawRoot));
+#endif
+		pList = pList->GetObjectNext(DrawRoot);
 	}
+#ifdef _DEBUG
+	PrintDebugProc("\n");
+#endif
 }
 
 //=============================================================================
@@ -224,13 +242,31 @@ void Object::DrawAll(void)
 //=============================================================================
 void Object::ReleaseAll(void)
 {
-	Object *pList = Object::GetObjectRoot();
+	Object *pList = NULL;
 	Object *pNext = NULL;
-
-	while (pList != NULL)
+	for (unsigned int i = 0; i < ObjectRootMax; i++)
 	{
-		pNext = pList->GetObjectNext();
-		pList->Release();
-		pList = pNext;
+		while (pList != NULL)
+		{
+			pNext = pList->GetObjectNext(ObjectRoot(i));
+			pList->Release();
+			pList = pNext;
+		}
 	}
+}
+
+//=============================================================================
+// ルートポインタのアドレス取得処理
+//=============================================================================
+Object **Object::GetObjectRootAdr(ObjectRoot eObjRoot)
+{
+	return &s_pRoot[eObjRoot];
+}
+
+//=============================================================================
+// ネクストポインタの取得処理
+//=============================================================================
+Object *Object::GetObjectNext(ObjectRoot eObjRoot)
+{ 
+	return m_pNext[eObjRoot];
 }

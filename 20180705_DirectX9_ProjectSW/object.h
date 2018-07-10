@@ -17,6 +17,10 @@
 //*****************************************************************************
 
 //*****************************************************************************
+// 列挙型定義
+//*****************************************************************************
+
+//*****************************************************************************
 // クラス定義
 //*****************************************************************************
 
@@ -27,25 +31,34 @@ public:
 	// リスト内優先順位
 	enum Priority
 	{
+		Highest,
 		High,
-		Normal,
-		Low
+		Middle,
+		Low,
+		Lowest
 	};
+	// オブジェクトID
 	enum ObjectID
 	{
 		NON,
 		COPYRIGHT,
 		FRAME
 	};
+	// ルートポインタ
+	enum ObjectRoot
+	{
+		UpdateRoot,
+		DrawRoot,
+		ObjectRootMax
+	};
 private:
-	static int		nObjectCount;		// 全オブジェクト数のカウンタ
-	static Object	*s_pRoot;			// リストのルートポインタ
-	Object			*m_pPrev;			// リストの前ポインタ
-	Object			*m_pNext;			// リストの次ポインタ
 
-	Priority		eMainPriority;		// 優先順位（メイン）
-	Priority		eSubPriority;		// 優先順位（サブ）
-	ObjectID		eObjectId;			// オブジェクト識別用ID
+	static int		nObjectCount;				// 全オブジェクト数のカウンタ
+	static Object	*s_pRoot[ObjectRootMax];	// リストの更新ルートポインタ
+	Object			*m_pPrev[ObjectRootMax];	// リストの前ポインタ
+	Object			*m_pNext[ObjectRootMax];	// リストの次ポインタ
+	Priority		m_ePriority[ObjectRootMax];	// 優先順位（サブ）
+	ObjectID		eObjectId;					// オブジェクト識別用ID
 public:
 
 	// 更新処理
@@ -73,25 +86,22 @@ public:
 	static void ReleaseAll(void);
 
 	// ルートポインタの取得処理
-	static Object *GetObjectRoot(void) { return s_pRoot; }
+	static Object *GetObjectRoot(ObjectRoot eObjRoot) { return s_pRoot[eObjRoot]; }
 	// ルートポインタのアドレス取得処理
-	static Object **GetObjectRootAdr(void) { return &s_pRoot; }
+	static Object **GetObjectRootAdr(ObjectRoot);
+
 	// ネクストポインタの取得処理
-	Object *GetObjectNext(void) { return m_pNext; }
+	Object *GetObjectNext(ObjectRoot eObjRoot);
 
 	// オブジェクトID設定処理
 	void SetObjectId(ObjectID eObjId) { eObjectId = eObjId; }
-	// メインプライオリティ設定処理
-	void SetMainPriority(Priority eMain) { eMainPriority = eMain; }
-	// サブプライオリティ設定処理
-	void SetSubPriority(Priority eSub) { eSubPriority = eSub; }
-
 	// オブジェクトID取得処理
 	ObjectID GetObjectId(void) { return (eObjectId); }
-	// メインプライオリティ取得処理
-	Priority GetMainPriority(void) { return (eMainPriority); }
-	// サブプライオリティ取得処理
-	Priority GetSubPriority(void) { return (eSubPriority); }
+
+	// プライオリティ設定処理
+	void SetPriority(ObjectRoot eObjRoot, Priority ePriority) { m_ePriority[eObjRoot] = ePriority; }
+	// プライオリティ取得処理
+	Priority GetPriority(ObjectRoot eObjRoot) { return (m_ePriority[eObjRoot]); }
 };
 
 //*****************************************************************************
