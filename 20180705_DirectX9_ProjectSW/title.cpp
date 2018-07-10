@@ -109,7 +109,8 @@ TitleScene::TitleScene(void)
 	new AirWaterFream;
 
 	LPDIRECT3DDEVICE9 pDevice = GetDevice();
-	m_CSkinMesh.Init(pDevice, "data/MODEL/Yuko.x");
+	//m_CSkinMesh.Init(pDevice, "data/MODEL/Yuko.x");
+	m_CSkinMesh.Init(pDevice, "test.x");
 
 }
 

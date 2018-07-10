@@ -93,7 +93,7 @@ Object::Object(void)
 	{
 		this->m_pPrev[i] = NULL;			// 前ポインタの初期化
 		this->m_pNext[i] = NULL;			// 後ポインタの初期化
-		this->m_ePriority[i] = Normal;
+		this->m_ePriority[i] = Middle;
 	}
 
 	//this->eUpdatePriority = Normal;	// メインプライオリティをNormalで初期化
