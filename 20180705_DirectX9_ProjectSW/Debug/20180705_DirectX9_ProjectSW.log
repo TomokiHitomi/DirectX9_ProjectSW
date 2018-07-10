@@ -1,4 +1,6 @@
-﻿  SkinMeshX.cpp
+﻿  title.cpp
+  SkinMeshX.cpp
 c:\users\hitomi\documents\visual studio 2015\projects\directx9_projectsw\20180705_directx9_projectsw\skinmeshx.cpp(74): warning C4101: 'hr': ローカル変数は 1 度も使われていません。
+  コードを生成中...
   20180705_DirectX9_ProjectSW.vcxproj -> C:\Users\Hitomi\Documents\Visual Studio 2015\Projects\DirectX9_ProjectSW\Debug\20180705_DirectX9_ProjectSW.exe
   20180705_DirectX9_ProjectSW.vcxproj -> C:\Users\Hitomi\Documents\Visual Studio 2015\Projects\DirectX9_ProjectSW\Debug\20180705_DirectX9_ProjectSW.pdb (Full PDB)
