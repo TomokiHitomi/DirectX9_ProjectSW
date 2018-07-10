@@ -21,5 +21,6 @@ c:\users\hitomi\documents\project\directx9_projectsw\20180705_directx9_projectsw
   c:\program files (x86)\windows kits\10\include\10.0.10240.0\ucrt\string.h(90): note: 'strcat' の宣言を確認してください
 c:\users\hitomi\documents\project\directx9_projectsw\20180705_directx9_projectsw\debugproc.cpp(205): warning C4996: 'strcat': This function or variable may be unsafe. Consider using strcat_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
   c:\program files (x86)\windows kits\10\include\10.0.10240.0\ucrt\string.h(90): note: 'strcat' の宣言を確認してください
+cl : コマンド ライン warning D9028: 簡易リビルド時のエラーです、通常のビルドに戻します
   20180705_DirectX9_ProjectSW.vcxproj -> C:\Users\Hitomi\Documents\project\DirectX9_ProjectSW\Debug\20180705_DirectX9_ProjectSW.exe
   20180705_DirectX9_ProjectSW.vcxproj -> C:\Users\Hitomi\Documents\project\DirectX9_ProjectSW\Debug\20180705_DirectX9_ProjectSW.pdb (Full PDB)
