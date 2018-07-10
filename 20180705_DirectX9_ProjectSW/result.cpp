@@ -12,6 +12,7 @@
 #include "sound.h"
 
 /* リザルトで必要なインクルード */
+#include "air_water_frame.h"
 
 /* Debug */
 #ifdef _DEBUG
@@ -36,7 +37,7 @@ extern SceneManager		g_cScene;				// Sceneマネージャ
 //=============================================================================
 void ResultScene::Update(void)
 {
-
+	Object::UpdateAll();
 }
 
 //=============================================================================
@@ -44,7 +45,7 @@ void ResultScene::Update(void)
 //=============================================================================
 void ResultScene::Draw(void)
 {
-
+	Object::DrawAll();
 }
 
 //=============================================================================
@@ -52,7 +53,7 @@ void ResultScene::Draw(void)
 //=============================================================================
 ResultScene::ResultScene(void)
 {
-
+	new AirWaterFream;
 }
 
 //=============================================================================
@@ -60,5 +61,5 @@ ResultScene::ResultScene(void)
 //=============================================================================
 ResultScene::~ResultScene(void)
 {
-
+	Object::ReleaseAll();
 }

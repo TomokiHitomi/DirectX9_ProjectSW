@@ -96,16 +96,18 @@ void TitleScene::Draw(void)
 //=============================================================================
 TitleScene::TitleScene(void)
 {
-	//Object *CObject = new Copyright;
-	//Object *CObject2 = new AirWaterFream;
+	new Copyright;
+	new AirWaterFream;
+	new Copyright;
+	new AirWaterFream;
+	new AirWaterFream;
 
 	new Copyright;
 	new AirWaterFream;
+	new AirWaterFream;
+	new Copyright;
+	new AirWaterFream;
 
-	//Object::Create(new Copyright);
-
-	//NewObject<Copyright>::Create();
-	//NewObject<AirWaterFream>::Create();
 	LPDIRECT3DDEVICE9 pDevice = GetDevice();
 	m_CSkinMesh.Init(pDevice, "data/MODEL/Yuko.x");
 
@@ -116,8 +118,10 @@ TitleScene::TitleScene(void)
 //=============================================================================
 TitleScene::~TitleScene(void)
 {
-	Object::ReleaseAll();
 	m_CSkinMesh.Release();
+
+
+	Object::ReleaseAll();
 }
 
 //=============================================================================

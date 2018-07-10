@@ -118,6 +118,7 @@ void DebugHowTo(void)
 	PrintDebugProc("【 Debug操作方法 】\n");
 	PrintDebugProc("F1:デバッグ表示/非表示  F2:TITLE  F3:GAME  F4:RESULT\n");
 	PrintDebugProc("9/0/マウスホイール:デバッグスクロール\n");
+	PrintDebugProc("←→:アニメーション変更\n");
 	PrintDebugProc("LSHIFT押下中  WASD:カメラ移動  ↑↓:拡大縮小  Enter:カメラリセット\n");
 	PrintDebugProc("\n");
 }

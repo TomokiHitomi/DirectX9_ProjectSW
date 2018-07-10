@@ -81,9 +81,42 @@ Object::Object(void)
 	this->m_pPrev = NULL;			// 前ポインタの初期化
 	this->m_pNext = NULL;			// 後ポインタの初期化
 
-	this->eMainPriority = Normal;	// メインプライオリティをNormal
-	this->eSubPriority = Normal;	// サブプライオリティをNormal
+	this->eMainPriority = Normal;	// メインプライオリティをNormalで初期化
+	this->eSubPriority = Normal;	// サブプライオリティをNormalで初期化
+}
 
+
+//=============================================================================
+// デストラクタ処理（終了）
+//=============================================================================
+Object::~Object(void)
+{
+	// オブジェクトカウンタをデクリメント
+	nObjectCount--;
+}
+
+//=============================================================================
+// オブジェクトIDとプライオリティの設定処理
+//=============================================================================
+void Object::SetIdAndPriority(ObjectID eObjId, Priority eMain, Priority eSub)
+{
+	//// プライオリティテスト用
+	eSub = Priority(11 - Priority(nObjectCount) - eSub);
+	eObjId = ObjectID(nObjectCount);
+
+	this->SetObjectId(eObjId);		// オブジェクトIDを設定
+	this->SetMainPriority(eMain);	// メインプライオリティを設定
+	this->SetSubPriority(eSub);		// サブプライオリティを設定
+
+	// オブジェクトをリスト追加処理
+	AppendList();
+}
+
+//=============================================================================
+// オブジェクトをリスト追加処理
+//=============================================================================
+void Object::AppendList(void)
+{
 	// ルートポインタをpListに格納
 	Object **pList = GetObjectRootAdr();
 	Object **pPrevTemp = NULL;
@@ -94,6 +127,33 @@ Object::Object(void)
 		// pListポインタが設定済みならば
 		if (*pList != NULL)
 		{
+			// メインプライオリティが高い、または同じ
+			if ((*pList)->eMainPriority >= this->eMainPriority)
+			{
+				// メインプライオリティが同じ、かつサブプライオリティが低い
+				if ((*pList)->eMainPriority == this->eMainPriority
+					&& (*pList)->eSubPriority < this->eSubPriority)
+				{
+					// 何もしない
+				}
+				else
+				{
+					// 割り込み処理
+					// pListの前ポインタに自らを格納
+					(*pList)->m_pPrev = this;
+					// pListがルート以外
+					if (*pList != s_pRoot)
+					{
+						// 前ポインタにpPrevTempを設定
+						this->m_pPrev = *pPrevTemp;
+					}
+					this->m_pNext = *pList;
+					// pListに自らを格納
+					*pList = this;
+					return;
+				}
+			}
+
 			// 前ポインタ候補としてpListを保管
 			pPrevTemp = pList;
 
@@ -112,19 +172,9 @@ Object::Object(void)
 
 			// pListの指すRootまたはNextに自らを格納
 			*pList = this;
-			break;
+			return;
 		}
 	}
-}
-
-
-//=============================================================================
-// デストラクタ処理（終了）
-//=============================================================================
-Object::~Object(void)
-{
-	// オブジェクトカウンタをデクリメント
-	nObjectCount--;
 }
 
 //=============================================================================
@@ -134,13 +184,24 @@ void Object::UpdateAll(void)
 {
 	Object *pList = Object::GetObjectRoot();
 
+#ifdef _DEBUG
+	PrintDebugProc("【 ObjectCount : %d 】\n", nObjectCount);
+#endif
+
 	while (pList != NULL)
 	{
 		pList->Update();
+
+#ifdef _DEBUG
+		PrintDebugProc("[ ID : %d  PriMain : %d  PriSub : %d] \n",
+			pList->GetObjectId(), pList->GetMainPriority(),pList->GetSubPriority());
+#endif
+
 		pList = pList->GetObjectNext();
 	}
-
-	PrintDebugProc("【 LIST_TEST : %d 】\n", nObjectCount);
+#ifdef _DEBUG
+	PrintDebugProc("\n");
+#endif
 }
 
 //=============================================================================

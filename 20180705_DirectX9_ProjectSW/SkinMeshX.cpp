@@ -317,7 +317,7 @@ HRESULT MY_HIERARCHY::CreateMeshContainer(LPCSTR Name, CONST D3DXMESHDATA* pMesh
 //ƒtƒŒ[ƒ€‚ð”jŠü‚·‚é
 HRESULT MY_HIERARCHY::DestroyFrame(LPD3DXFRAME pFrameToFree)
 {
-	//2e‰ð•ú–hŽ~
+	// 2d‰ð•ú–hŽ~
 	// if (pFrameToFree == NULL)return S_FALSE;
 	SAFE_DELETE_ARRAY(pFrameToFree->Name);
 	if (pFrameToFree->pFrameFirstChild)

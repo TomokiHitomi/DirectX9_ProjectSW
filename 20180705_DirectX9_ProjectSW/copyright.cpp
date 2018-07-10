@@ -30,6 +30,9 @@
 //=============================================================================
 Copyright::Copyright(void)
 {
+	// オブジェクトIDとプライオリティの設定処理
+	SetIdAndPriority(ObjectID::COPYRIGHT, Priority::High, Priority::Normal);
+
 	LPDIRECT3DDEVICE9 pDevice = GetDevice();
 	
 	// テクスチャの読み込み（Debugはファイル／Releaseはアーカイブから）
