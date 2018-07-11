@@ -159,14 +159,18 @@
     <ClCompile Include="light.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="object.cpp" />
+    <ClCompile Include="player.cpp" />
     <ClCompile Include="result.cpp" />
     <ClCompile Include="scene.cpp" />
     <ClCompile Include="SkinMeshX.cpp" />
+    <ClCompile Include="skydome.cpp" />
     <ClCompile Include="sound.cpp" />
     <ClCompile Include="title.cpp" />
+    <ClCompile Include="XModel.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="air_water_frame.h" />
+    <ClInclude Include="AllocHierarchy.h" />
     <ClInclude Include="calculate.h" />
     <ClInclude Include="camera.h" />
     <ClInclude Include="copyright.h" />
@@ -177,11 +181,14 @@
     <ClInclude Include="light.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="object.h" />
+    <ClInclude Include="player.h" />
     <ClInclude Include="result.h" />
     <ClInclude Include="scene.h" />
     <ClInclude Include="SkinMeshX.h" />
+    <ClInclude Include="skydome.h" />
     <ClInclude Include="sound.h" />
     <ClInclude Include="title.h" />
+    <ClInclude Include="XModel.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

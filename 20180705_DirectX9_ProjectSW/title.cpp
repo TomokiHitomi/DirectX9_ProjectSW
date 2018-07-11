@@ -17,6 +17,8 @@
 #include "object.h"
 #include "SkinMeshX.h"
 #include "light.h"
+#include "player.h"
+#include "skydome.h"
 
 /* Debug */
 #ifdef _DEBUG
@@ -34,8 +36,6 @@
 //*****************************************************************************
 // グローバル変数
 //*****************************************************************************
-CSkinMesh			m_CSkinMesh;		// スキンメッシュ格納用
-D3DXMATRIX			worldmtx;
 
 //=============================================================================
 // 更新処理
@@ -43,29 +43,6 @@ D3DXMATRIX			worldmtx;
 void TitleScene::Update(void)
 {
 	Object::UpdateAll();
-
-
-
-	D3DXMATRIX mtxScl, mtxRot, mtxTranslate;
-
-	/******************** ワールド変換 ********************/
-	// ワールドマトリクスの初期化
-	D3DXMatrixIdentity(&worldmtx);
-
-	// 【S】スケールを反映(Multiplyは行列計算)
-	D3DXMatrixScaling(&mtxScl, 3.0f, 3.0f, 3.0f);
-	D3DXMatrixMultiply(&worldmtx, &worldmtx, &mtxScl);
-
-	// 【R】回転を反映(YawPitchRollはy,x,z)
-	D3DXMatrixRotationYawPitchRoll(&mtxRot, 0.0f, 0.0f, 0.0f);
-	D3DXMatrixMultiply(&worldmtx, &worldmtx, &mtxRot);
-
-	// 【T】平行移動を反映(オブジェクトを配置している）
-	D3DXMatrixTranslation(&mtxTranslate, 0.0f, 0.0f, 0.0f);
-	D3DXMatrixMultiply(&worldmtx, &worldmtx, &mtxTranslate);
-
-	m_CSkinMesh.Update(worldmtx);
-
 }
 
 //=============================================================================
@@ -73,22 +50,7 @@ void TitleScene::Update(void)
 //=============================================================================
 void TitleScene::Draw(void)
 {
-
-	// ライティングを強めにあてる
-	SetLight(LIGHT_SUB1, TRUE);
-	SetLight(LIGHT_SUB2, TRUE);
-
-	LPDIRECT3DDEVICE9 pDevice = GetDevice();
-	m_CSkinMesh.Draw(pDevice);
-
-	// ライティングを通常に戻す
-	SetLight(LIGHT_SUB1, FALSE);
-	SetLight(LIGHT_SUB2, FALSE);
-
-
 	Object::DrawAll();
-
-
 }
 
 //=============================================================================
@@ -107,11 +69,8 @@ TitleScene::TitleScene(void)
 	new AirWaterFream;
 	new Copyright;
 	new AirWaterFream;
-
-	LPDIRECT3DDEVICE9 pDevice = GetDevice();
-	m_CSkinMesh.Init(pDevice, "data/MODEL/Yuko.x");
-	//m_CSkinMesh.Init(pDevice, "test.x");
-
+	new Player;
+	new Skydome;
 }
 
 //=============================================================================
@@ -119,9 +78,6 @@ TitleScene::TitleScene(void)
 //=============================================================================
 TitleScene::~TitleScene(void)
 {
-	m_CSkinMesh.Release();
-
-
 	Object::ReleaseAll();
 }
 

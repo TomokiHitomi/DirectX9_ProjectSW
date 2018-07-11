@@ -116,8 +116,8 @@ Object::~Object(void)
 //=============================================================================
 void Object::SetIdAndPriority(ObjectID eObjId, Priority eUpdateP, Priority eDrawP)
 {
-	// プライオリティテスト用
-	eObjId = ObjectID(nObjectCount);
+	//// プライオリティテスト用
+	//eObjId = ObjectID(nObjectCount);
 
 	this->SetObjectId(eObjId);							// オブジェクトIDを設定
 	this->SetPriority(UpdateRoot, eUpdateP);	// 更新プライオリティを設定

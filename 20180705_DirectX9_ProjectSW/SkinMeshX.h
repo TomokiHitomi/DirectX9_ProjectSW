@@ -1,6 +1,6 @@
 //=============================================================================
 //
-// モデル処理 [SkinMeshX.h]
+// アニメーションモデル処理 [SkinMeshX.h]
 // Author : GP12A295 25 人見友基
 //
 // 参考：GESブログ
@@ -84,7 +84,6 @@ public:
 		CONST D3DXEFFECTINSTANCE*, DWORD, CONST DWORD *, LPD3DXSKININFO, LPD3DXMESHCONTAINER *);
 	STDMETHOD(DestroyFrame)(THIS_ LPD3DXFRAME);
 	STDMETHOD(DestroyMeshContainer)(THIS_ LPD3DXMESHCONTAINER);
-	LPD3DXMESHCONTAINER pMeshContainerTest;
 private:
 };
 

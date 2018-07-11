@@ -32,6 +32,8 @@ enum
 //*****************************************************************************
 // プロトタイプ宣言
 //*****************************************************************************
+
+void WorldConvert(D3DXMATRIX*, D3DXVECTOR3, D3DXVECTOR3, D3DXVECTOR3);
 float DotProduct(D3DXVECTOR3 *vl, D3DXVECTOR3 *vr);
 D3DXVECTOR3 *CrossProduct(D3DXVECTOR3 *ret, D3DXVECTOR3 *vl, D3DXVECTOR3 *vr);
 float PiCalculate180(float fAngle);

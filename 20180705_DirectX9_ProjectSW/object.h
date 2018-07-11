@@ -42,7 +42,9 @@ public:
 	{
 		NON,
 		COPYRIGHT,
-		FRAME
+		FRAME,
+		PLAYER,
+		SKYDOME
 	};
 	// ルートポインタ
 	enum ObjectRoot

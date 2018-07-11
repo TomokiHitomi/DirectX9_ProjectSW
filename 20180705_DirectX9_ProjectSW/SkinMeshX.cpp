@@ -1,6 +1,6 @@
 //=============================================================================
 //
-// モデル処理 [SkinMeshX.cpp]
+// アニメーションモデル処理 [SkinMeshX.cpp]
 // Author : GP12A295 25 人見友基
 //
 // 参考：GESブログ
@@ -18,11 +18,28 @@
 #include "debugproc.h"
 #endif
 
+static int testCreate = 0;
+static int testDestroy = 0;
+
+CHAR* HeapCopy(CHAR* sName)
+{
+	DWORD dwLen = (DWORD)strlen(sName) + 1;
+	CHAR* sNewName = new CHAR[dwLen];
+	if (sNewName)
+		strcpy_s(sNewName, dwLen, sName);
+	return sNewName;
+}
+
 //=============================================================================
 // フレーム格納関数
 //=============================================================================
 HRESULT MY_HIERARCHY::CreateFrame(LPCTSTR Name, LPD3DXFRAME *ppNewFrame)
 {
+	testCreate++;
+	if (testCreate > 138)
+	{
+		testCreate++;
+	}
 	HRESULT hr = S_OK;
 	MYFRAME *pFrame;
 	//新しいフレームアドレス格納用変数を初期化
@@ -34,16 +51,31 @@ HRESULT MY_HIERARCHY::CreateFrame(LPCTSTR Name, LPD3DXFRAME *ppNewFrame)
 	{
 		return E_OUTOFMEMORY;
 	}
+	ZeroMemory(pFrame, sizeof(MYFRAME));
+
+
 	//フレーム名格納用領域確保
-	pFrame->Name = new TCHAR[lstrlen(Name) + 1];
-	//領域確保の失敗時の処理
-	if (!pFrame->Name)
+	if (Name)
+		pFrame->Name = (CHAR *)HeapCopy((CHAR *)Name);
+	else
 	{
-		return E_FAIL;
+		// TODO: Add a counter to append to the string below
+		//       so that we are using a different name for
+		//       each bone.
+		pFrame->Name = NULL;
 	}
-	// strcpy(pFrame->Name,Name);
-	//フレーム名格納
-	strcpy_s(pFrame->Name, lstrlen(Name) + 1, Name);
+
+	////フレーム名格納用領域確保
+	//pFrame->Name = new TCHAR[lstrlen(Name) + 1];
+	////領域確保の失敗時の処理
+	//if (!pFrame->Name)
+	//{
+	//	return E_FAIL;
+	//}
+	// //strcpy(pFrame->Name,Name);
+	////フレーム名格納
+	//strcpy_s(pFrame->Name, lstrlen(Name) + 1, Name);
+
 	//行列の初期化
 	D3DXMatrixIdentity(&pFrame->TransformationMatrix);
 	D3DXMatrixIdentity(&pFrame->CombinedTransformationMatrix);
@@ -74,6 +106,7 @@ HRESULT MY_HIERARCHY::CreateMeshContainer(LPCSTR Name, CONST D3DXMESHDATA* pMesh
 	HRESULT hr;
 	//ローカル生成用
 	MYMESHCONTAINER *pMeshContainer = NULL;
+
 	//メッシュの面の数を格納
 	int iFacesAmount;
 	//forループで使用
@@ -88,8 +121,10 @@ HRESULT MY_HIERARCHY::CreateMeshContainer(LPCSTR Name, CONST D3DXMESHDATA* pMesh
 	DWORD dwBoneNum = 0;
 	//pMeshに"外部引数の"メッシュアドレスを格納
 	pMesh = pMeshData->pMesh;
+
 	//メッシュコンテナ領域の動的確保
 	pMeshContainer = new MYMESHCONTAINER;
+
 	//領域確保失敗時
 	if (pMeshContainer == NULL)
 	{
@@ -110,7 +145,6 @@ HRESULT MY_HIERARCHY::CreateMeshContainer(LPCSTR Name, CONST D3DXMESHDATA* pMesh
 	pMesh->GetDevice(&pDevice);
 	//メッシュの面の数を取得
 	iFacesAmount = pMesh->GetNumFaces();
-
 
 	//// メッシュに法線がないので法線を追加
 	//pMeshContainer->MeshData.Type = D3DXMESHTYPE_MESH;
@@ -185,22 +219,22 @@ HRESULT MY_HIERARCHY::CreateMeshContainer(LPCSTR Name, CONST D3DXMESHDATA* pMesh
 			//テクスチャのファイル名がNULLでなければ(テクスチャデータがあれば)
 			if (pMeshContainer->pMaterials[iMaterial].pTextureFilename != NULL)
 			{
-				//////マテリアルカラーを0.5に設定
-				pMeshContainer->pMaterials[iMaterial].MatD3D.Diffuse.r = 1.0f;
-				pMeshContainer->pMaterials[iMaterial].MatD3D.Diffuse.g = 1.0f;
-				pMeshContainer->pMaterials[iMaterial].MatD3D.Diffuse.b = 1.0f;
-				pMeshContainer->pMaterials[iMaterial].MatD3D.Diffuse.a = 1.0f;
+				////////マテリアルカラーを0.5に設定
+				//pMeshContainer->pMaterials[iMaterial].MatD3D.Diffuse.r = 1.0f;
+				//pMeshContainer->pMaterials[iMaterial].MatD3D.Diffuse.g = 1.0f;
+				//pMeshContainer->pMaterials[iMaterial].MatD3D.Diffuse.b = 1.0f;
+				//pMeshContainer->pMaterials[iMaterial].MatD3D.Diffuse.a = 1.0f;
 
-				//pMeshContainer->pMaterials[iMaterial].MatD3D.Emissive.r = 0.1f;
-				//pMeshContainer->pMaterials[iMaterial].MatD3D.Emissive.g = 0.1f;
-				//pMeshContainer->pMaterials[iMaterial].MatD3D.Emissive.b = 0.1f;
-				//pMeshContainer->pMaterials[iMaterial].MatD3D.Emissive.a = 1.0f;
+				////pMeshContainer->pMaterials[iMaterial].MatD3D.Emissive.r = 0.1f;
+				////pMeshContainer->pMaterials[iMaterial].MatD3D.Emissive.g = 0.1f;
+				////pMeshContainer->pMaterials[iMaterial].MatD3D.Emissive.b = 0.1f;
+				////pMeshContainer->pMaterials[iMaterial].MatD3D.Emissive.a = 1.0f;
 
-				////スペキュラも0.5に設定(上で設定したマテリアルカラーの0.5の設定をコピー)
-				pMeshContainer->pMaterials[iMaterial].MatD3D.Specular = pMeshContainer->pMaterials[iMaterial].MatD3D.Diffuse;
-				////pMeshContainer->pMaterials[iMaterial].MatD3D.Emissive = pMeshContainer->pMaterials[iMaterial].MatD3D.Diffuse;
-				pMeshContainer->pMaterials[iMaterial].MatD3D.Ambient = pMeshContainer->pMaterials[iMaterial].MatD3D.Diffuse;
-				pMeshContainer->pMaterials[iMaterial].MatD3D.Power = 50.0f;
+				//////スペキュラも0.5に設定(上で設定したマテリアルカラーの0.5の設定をコピー)
+				//pMeshContainer->pMaterials[iMaterial].MatD3D.Specular = pMeshContainer->pMaterials[iMaterial].MatD3D.Diffuse;
+				//////pMeshContainer->pMaterials[iMaterial].MatD3D.Emissive = pMeshContainer->pMaterials[iMaterial].MatD3D.Diffuse;
+				//pMeshContainer->pMaterials[iMaterial].MatD3D.Ambient = pMeshContainer->pMaterials[iMaterial].MatD3D.Diffuse;
+				//pMeshContainer->pMaterials[iMaterial].MatD3D.Power = 50.0f;
 
 				//テクスチャのファイルパス保存用変数
 				TCHAR strTexturePath[MAX_PATH];
@@ -283,12 +317,13 @@ HRESULT MY_HIERARCHY::CreateMeshContainer(LPCSTR Name, CONST D3DXMESHDATA* pMesh
 	pMesh->CloneMesh(pMesh->GetOptions(), &Decl[0], pDevice, &pMeshContainer->pOriMesh);
 	//メッシュのタイプを定義
 	pMeshContainer->MeshData.Type = D3DXMESHTYPE_MESH;
+
 	//- 固定パイプライン描画用に変換 -//
 	//シェーダで描画する場合は別途変換が必要
 	//頂点単位でのブレンドの重みとボーンの組み合わせテーブルを適応した新しいメッシュを返す。
 	if (FAILED(pMeshContainer->pSkinInfo->ConvertToBlendedMesh(
 		pMeshContainer->pOriMesh, //元のメッシュデータアドレス
-		NULL, //オプション(現在は使われていないためNULLでいい)
+		NULL, //オプション(現在は使われていないためNULLでいい)	
 		pMeshContainer->pAdjacency, //元のメッシュの隣接性情報
 		NULL, //出力メッシュの隣接性情報
 		NULL, //各面の新しいインデックス値格納用変数のアドレス
@@ -303,7 +338,6 @@ HRESULT MY_HIERARCHY::CreateMeshContainer(LPCSTR Name, CONST D3DXMESHDATA* pMesh
 	}
 	//ローカルに生成したメッシュコンテナーを呼び出し側にコピーする
 	*ppMeshContainer = pMeshContainer;
-	pMeshContainerTest = pMeshContainer;
 
 	//参照カウンタを増やしたので減らす
 	SAFE_RELEASE(pDevice);
@@ -317,6 +351,13 @@ HRESULT MY_HIERARCHY::CreateMeshContainer(LPCSTR Name, CONST D3DXMESHDATA* pMesh
 //フレームを破棄する
 HRESULT MY_HIERARCHY::DestroyFrame(LPD3DXFRAME pFrameToFree)
 {
+
+	testDestroy++;
+	if (testDestroy > 139)
+	{
+		testDestroy++;
+	}
+
 	// 2重解放防止
 	// if (pFrameToFree == NULL)return S_FALSE;
 	SAFE_DELETE_ARRAY(pFrameToFree->Name);
@@ -670,6 +711,10 @@ HRESULT CSkinMesh::Init(LPDIRECT3DDEVICE9 lpD3DDevice, LPSTR pMeshPass) {
 	m_FrameArray.clear();
 	m_IntoMeshFrameArray.clear();
 	CreateFrameArray(m_pFrameRoot);
+
+	MYFRAME *pFrame = NULL;
+
+
 	//フレーム配列にオフセット情報作成
 	for (DWORD i = 0; i<m_IntoMeshFrameArray.size(); i++) {
 		MYMESHCONTAINER* pMyMeshContainer = (MYMESHCONTAINER*)m_IntoMeshFrameArray[i]->pMeshContainer;
@@ -677,17 +722,26 @@ HRESULT CSkinMesh::Init(LPDIRECT3DDEVICE9 lpD3DDevice, LPSTR pMeshPass) {
 			//スキン情報
 			if (pMyMeshContainer->pSkinInfo) {
 				DWORD cBones = pMyMeshContainer->pSkinInfo->GetNumBones();
-				for (DWORD iBone = 0; iBone<cBones; iBone++) {
-					//フレーム内から同じ名前のフレームを検索
-					for (DWORD Idx = 0; Idx<m_FrameArray.size(); Idx++) {
-						if (strcmp(pMyMeshContainer->pSkinInfo->GetBoneName(iBone), m_FrameArray[Idx]->Name) == 0) {
-							pMyMeshContainer->BoneFrameArray.push_back(m_FrameArray[Idx]);
-							//Offset行列
-							m_FrameArray[Idx]->OffsetMat = *(pMyMeshContainer->pSkinInfo->GetBoneOffsetMatrix(iBone));
-							m_FrameArray[Idx]->OffsetID = Idx;
-							break;
-						}
+				for (DWORD iBone = 0; iBone<cBones; iBone++) 
+				{
+					pFrame = (MYFRAME*)D3DXFrameFind(m_pFrameRoot, pMyMeshContainer->pSkinInfo->GetBoneName(iBone));
+					if (pFrame == NULL)
+					{
+						return E_FAIL;
 					}
+					pMyMeshContainer->ppBoneMatrix[iBone] = &pFrame->CombinedTransformationMatrix;
+
+
+					////フレーム内から同じ名前のフレームを検索
+					//for (DWORD Idx = 0; Idx<m_FrameArray.size(); Idx++) {
+					//	if (strcmp(pMyMeshContainer->pSkinInfo->GetBoneName(iBone), m_FrameArray[Idx]->Name) == 0) {
+					//		pMyMeshContainer->BoneFrameArray.push_back(m_FrameArray[Idx]);
+					//		//Offset行列
+					//		m_FrameArray[Idx]->OffsetMat = *(pMyMeshContainer->pSkinInfo->GetBoneOffsetMatrix(iBone));
+					//		m_FrameArray[Idx]->OffsetID = Idx;
+					//		break;
+					//	}
+					//}
 				}
 			}
 			//次へ

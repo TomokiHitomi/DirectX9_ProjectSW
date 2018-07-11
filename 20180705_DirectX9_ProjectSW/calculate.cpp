@@ -14,6 +14,31 @@
 
 
 //=============================================================================
+// ワールド変換
+//=============================================================================
+void WorldConvert(D3DXMATRIX *world, D3DXVECTOR3 pos,
+	D3DXVECTOR3 rot, D3DXVECTOR3 scl)
+{
+	D3DXMATRIX mtxScl, mtxRot, mtxTranslate;
+
+	/******************** ワールド変換 ********************/
+	// ワールドマトリクスの初期化
+	D3DXMatrixIdentity(world);
+
+	// 【S】スケールを反映(Multiplyは行列計算)
+	D3DXMatrixScaling(&mtxScl, scl.x, scl.y, scl.z);
+	D3DXMatrixMultiply(world, world, &mtxScl);
+
+	// 【R】回転を反映(YawPitchRollはy,x,z)
+	D3DXMatrixRotationYawPitchRoll(&mtxRot, rot.y, rot.x, rot.z);
+	D3DXMatrixMultiply(world, world, &mtxRot);
+
+	// 【T】平行移動を反映(オブジェクトを配置している）
+	D3DXMatrixTranslation(&mtxTranslate, pos.x, pos.y, pos.z);
+	D3DXMatrixMultiply(world, world, &mtxTranslate);
+}
+
+//=============================================================================
 // 内積
 //=============================================================================
 float DotProduct(D3DXVECTOR3 *vl, D3DXVECTOR3 *vr)
