@@ -1,3 +1,2 @@
-﻿  skydome.cpp
-  20180705_DirectX9_ProjectSW.vcxproj -> C:\Users\Hitomi\Documents\project\DirectX9_ProjectSW\Debug\20180705_DirectX9_ProjectSW.exe
-  20180705_DirectX9_ProjectSW.vcxproj -> C:\Users\Hitomi\Documents\project\DirectX9_ProjectSW\Debug\20180705_DirectX9_ProjectSW.pdb (Full PDB)
+﻿  player.cpp
+c:\users\hitomi\documents\project\directx9_projectsw\20180705_directx9_projectsw\player.cpp(266): error C2059: 構文エラー: ')'

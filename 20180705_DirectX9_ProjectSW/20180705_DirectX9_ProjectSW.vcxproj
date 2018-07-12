@@ -152,6 +152,7 @@
     <ClCompile Include="calculate.cpp" />
     <ClCompile Include="camera.cpp" />
     <ClCompile Include="copyright.cpp" />
+    <ClCompile Include="cube.cpp" />
     <ClCompile Include="debugproc.cpp" />
     <ClCompile Include="fade.cpp" />
     <ClCompile Include="game.cpp" />
@@ -174,6 +175,7 @@
     <ClInclude Include="calculate.h" />
     <ClInclude Include="camera.h" />
     <ClInclude Include="copyright.h" />
+    <ClInclude Include="cube.h" />
     <ClInclude Include="debugproc.h" />
     <ClInclude Include="fade.h" />
     <ClInclude Include="game.h" />

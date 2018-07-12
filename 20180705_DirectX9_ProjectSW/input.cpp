@@ -582,13 +582,13 @@ void UpdatePad(void)
 
 
 		//* y-axis (forward)
-		if (dijs.lY < 0)					padState[i] |= BUTTON_UP;
+		if (dijs.lY < 0)				padState[i] |= BUTTON_UP;
 		//* y-axis (backward)
-		if (dijs.lY > 0)					padState[i] |= BUTTON_DOWN;
+		if (dijs.lY > 0)				padState[i] |= BUTTON_DOWN;
 		//* x-axis (left)
-		if (dijs.lX < 0)					padState[i] |= BUTTON_LEFT;
+		if (dijs.lX < 0)				padState[i] |= BUTTON_LEFT;
 		//* x-axis (right)
-		if (dijs.lX > 0)					padState[i] |= BUTTON_RIGHT;
+		if (dijs.lX > 0)				padState[i] |= BUTTON_RIGHT;
 		//* Ａボタン
 		if (dijs.rgbButtons[0] & 0x80)	padState[i] |= BUTTON_A;
 		//* Ｂボタン
@@ -656,8 +656,6 @@ BOOL IsButtonTriggered(int padNo, DWORD button)
 {
 	return (button & padTrigger[padNo]);
 }
-
-
 
 //=============================================================================
 // XInput初期化処理
@@ -866,4 +864,42 @@ void SetXInputVibration(int padNo, int nFlag, WORD wVib)
 	{
 		g_xVibration[padNo].wRightMotorSpeed = wVib;
 	}
+}
+
+bool InputPress(INPUT_CHECK eInput)
+{
+	int nKey = 0;
+	DWORD dwButton = 0, dwXButton = 0;
+
+	switch (eInput)
+	{
+	case INPUT_UP:
+		nKey = DIK_W;
+		dwButton |= BUTTON_UP;
+		dwXButton |= XBOTTON_DPAD_UP;
+		break;
+	case INPUT_DOWN:
+		nKey = DIK_S;
+		dwButton |= BUTTON_DOWN;
+		dwXButton |= XBOTTON_DPAD_DOWN;
+		break;
+	case INPUT_LEFT:
+		nKey = DIK_A;
+		dwButton |= BUTTON_LEFT;
+		dwXButton |= XBOTTON_DPAD_LEFT;
+		break;
+	case INPUT_RIGHT:
+		nKey = DIK_D;
+		dwButton |= BUTTON_RIGHT;
+		dwXButton |= XBOTTON_DPAD_RIGHT;
+		break;
+	}
+	
+	if ((g_keyState[nKey] & 0x80) ? true : false
+		|| (dwButton & padState[0])
+		|| (dwXButton & g_dwPadState[0]))
+	{
+		return true;
+	}
+	return false;
 }

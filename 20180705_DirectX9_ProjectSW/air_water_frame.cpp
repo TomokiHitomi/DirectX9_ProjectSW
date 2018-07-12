@@ -32,7 +32,7 @@ AirWaterFream::AirWaterFream(void)
 {
 
 	// オブジェクトIDとプライオリティの設定処理
-	SetIdAndPriority(ObjectID::FRAME, Priority::Low, Priority::Highest);
+	SetIdAndPriority(ObjectID::FRAME, Priority::Low, Priority::Lowest);
 
 
 	LPDIRECT3DDEVICE9 pDevice = GetDevice();

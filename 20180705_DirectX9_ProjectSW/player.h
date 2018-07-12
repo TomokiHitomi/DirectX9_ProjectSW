@@ -17,13 +17,15 @@
 // マクロ定義
 //*****************************************************************************
 // モデル
-#define MODEL_PLAYER				("test.x")
-
-// モデルの最大数
-#define MODEL_PLAYER_MAX			(1)
+#define PLAYER_MODEL				("flower.X")
 
 // モデルスケール
-#define MODEL_PLAYER_SCL			(0.5f)
+#define PLAYER_SCL					(0.5f)
+#define PLAYER_MOVE_SPEED			(3.0f)
+#define PLAYER_ROT_SPEED			(0.01f)
+#define PLAYER_HEIGHT				(30.0f)
+#define PLAYER_MOVE_INERTIA			(0.3f)
+#define PLAYER_ROT_INERTIA			(0.3f)
 
 //*****************************************************************************
 // 構造体定義
@@ -40,6 +42,10 @@ private:
 	D3DXVECTOR3		m_vPos;				// 座標情報
 	D3DXVECTOR3		m_vRot;				// 回転情報
 	D3DXVECTOR3		m_vScl;				// 拡縮情報
+	D3DXVECTOR3		m_vMove;			// 移動量情報
+
+	D3DXVECTOR3		m_vRotIner;			// 回転慣性情報
+
 	D3DXMATRIX		m_mtxWorld;			// ワールドマトリクス
 	bool			m_bUse;				// 使用フラグ
 public:
@@ -59,7 +65,9 @@ public:
 	// 描画処理
 	void	Draw(void);
 private:
-
+	void	Move(void);
+	void	MoveFunc(float);
+	void	RotFunc(D3DXVECTOR3);
 };
 
 //*****************************************************************************

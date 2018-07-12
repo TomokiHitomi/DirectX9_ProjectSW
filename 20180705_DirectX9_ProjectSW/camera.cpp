@@ -22,7 +22,6 @@
 // プロトタイプ宣言
 //*****************************************************************************
 D3DXVECTOR3 GetLookAtVct(void);
-void SetCameraAt(void);
 void MoveCamera(int no);
 void MoveCameraFunc(float fAngle);
 
@@ -40,8 +39,8 @@ void InitCamera(void)
 
 	camera->fHAngleMargin = 0.0f;
 	camera->fMoveSpeed = CAMERA_MOVE_SPEED;
-	camera->posCameraEye = D3DXVECTOR3(POS_X_CAM, POS_Y_CAM, POS_Z_CAM);
-	camera->posCameraAt = D3DXVECTOR3(0.0f, CAMERA_HEIGHT, 0.0f);
+	camera->posCameraEye = D3DXVECTOR3(0.0f, CAMERA_HEIGHT, 0.0f);
+	camera->posCameraAt = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 	camera->vecCameraAtPos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 	camera->vecCameraUp = D3DXVECTOR3(0.0f, 1.0f, 0.0f);
 	camera->fVAngle = CAMERA_V_ANGLE;
@@ -50,7 +49,6 @@ void InitCamera(void)
 	camera->fHAngleDiff = CAMERA_H_ANGLE;
 	camera->fLength = CAMERA_LENGTH;
 	camera->fLengthTemp = CAMERA_LENGTH;
-
 }
 
 //=============================================================================
@@ -58,6 +56,7 @@ void InitCamera(void)
 //=============================================================================
 void UninitCamera(void)
 {
+
 }
 
 //=============================================================================
@@ -155,9 +154,9 @@ void UpdateCamera(void)
 
 	// クォータニオン処理
 	QuaternionCalculate(&vecTa, &vecAxis, camera->fVAngle,
-		&camera->posCameraAt);
+		&camera->posCameraEye);
 	// 回転軸に設置
-	camera->posCameraAt += camera->posCameraEye;
+	camera->posCameraEye += camera->posCameraAt;
 
 #ifdef _DEBUG
 	PrintDebugProc("【CANERA】\n");
@@ -172,12 +171,12 @@ void UpdateCamera(void)
 }
 
 //=============================================================================
-// カメラの設定処理
+// カメラの注視点設定処理
 //=============================================================================
-void SetCameraAt(void)
+void SetCameraAt(D3DXVECTOR3 vAt)
 {
 	CAMERA *camera = GetCamera();
-
+	camera->posCameraAt = vAt;
 }
 
 //=============================================================================
@@ -273,55 +272,55 @@ CAMERA *GetCamera(void)
 //=============================================================================
 void MoveCamera(int no)
 {
-	CAMERA *camera = GetCamera();
-	// 移動処理
-	if (GetKeyboardPress(DIK_A) || IsButtonPressed(0, BUTTON_LEFT))
-	{
-		if (GetKeyboardPress(DIK_W) || IsButtonPressed(0, BUTTON_UP))
-		{// 左前移動
-			MoveCameraFunc(camera->fHAngle + D3DX_PI * 0.25f);
-		}
-		else if (GetKeyboardPress(DIK_S) || IsButtonPressed(0, BUTTON_DOWN))
-		{// 左後移動
-			MoveCameraFunc(camera->fHAngle + D3DX_PI * 0.75f);
-		}
-		else if (GetKeyboardPress(DIK_D) || IsButtonPressed(0, BUTTON_RIGHT))
-		{// 左右同時押しは処理なし
-		}
-		else
-		{// 左移動
-			MoveCameraFunc(camera->fHAngle + D3DX_PI * 0.50f);
-		}
-	}
-	else if (GetKeyboardPress(DIK_D) || IsButtonPressed(0, BUTTON_RIGHT))
-	{
-		if (GetKeyboardPress(DIK_W) || IsButtonPressed(0, BUTTON_LEFT))
-		{// 右前移動
-			MoveCameraFunc(camera->fHAngle - D3DX_PI * 0.25f);
-		}
-		else if (GetKeyboardPress(DIK_S) || IsButtonPressed(0, BUTTON_DOWN))
-		{// 右後移動
-			MoveCameraFunc(camera->fHAngle - D3DX_PI * 0.75f);
-		}
-		else
-		{// 右移動
-			MoveCameraFunc(camera->fHAngle - D3DX_PI * 0.50f);
-		}
-	}
-	else if (GetKeyboardPress(DIK_W) || IsButtonPressed(0, BUTTON_UP))
-	{// 前移動
-		if (GetKeyboardPress(DIK_S) || IsButtonPressed(0, BUTTON_DOWN))
-		{// 前後同時押しは処理なし
-		}
-		else
-		{
-			MoveCameraFunc(camera->fHAngle);
-		}
-	}
-	else if (GetKeyboardPress(DIK_S) || IsButtonPressed(0, BUTTON_DOWN))
-	{// 後移動
-		MoveCameraFunc(camera->fHAngle + D3DX_PI);
-	}
+	//CAMERA *camera = GetCamera();
+	//// 移動処理
+	//if (GetKeyboardPress(DIK_A) || IsButtonPressed(0, BUTTON_LEFT))
+	//{
+	//	if (GetKeyboardPress(DIK_W) || IsButtonPressed(0, BUTTON_UP))
+	//	{// 左前移動
+	//		MoveCameraFunc(camera->fHAngle + D3DX_PI * 0.25f);
+	//	}
+	//	else if (GetKeyboardPress(DIK_S) || IsButtonPressed(0, BUTTON_DOWN))
+	//	{// 左後移動
+	//		MoveCameraFunc(camera->fHAngle + D3DX_PI * 0.75f);
+	//	}
+	//	else if (GetKeyboardPress(DIK_D) || IsButtonPressed(0, BUTTON_RIGHT))
+	//	{// 左右同時押しは処理なし
+	//	}
+	//	else
+	//	{// 左移動
+	//		MoveCameraFunc(camera->fHAngle + D3DX_PI * 0.50f);
+	//	}
+	//}
+	//else if (GetKeyboardPress(DIK_D) || IsButtonPressed(0, BUTTON_RIGHT))
+	//{
+	//	if (GetKeyboardPress(DIK_W) || IsButtonPressed(0, BUTTON_LEFT))
+	//	{// 右前移動
+	//		MoveCameraFunc(camera->fHAngle - D3DX_PI * 0.25f);
+	//	}
+	//	else if (GetKeyboardPress(DIK_S) || IsButtonPressed(0, BUTTON_DOWN))
+	//	{// 右後移動
+	//		MoveCameraFunc(camera->fHAngle - D3DX_PI * 0.75f);
+	//	}
+	//	else
+	//	{// 右移動
+	//		MoveCameraFunc(camera->fHAngle - D3DX_PI * 0.50f);
+	//	}
+	//}
+	//else if (GetKeyboardPress(DIK_W) || IsButtonPressed(0, BUTTON_UP))
+	//{// 前移動
+	//	if (GetKeyboardPress(DIK_S) || IsButtonPressed(0, BUTTON_DOWN))
+	//	{// 前後同時押しは処理なし
+	//	}
+	//	else
+	//	{
+	//		MoveCameraFunc(camera->fHAngle);
+	//	}
+	//}
+	//else if (GetKeyboardPress(DIK_S) || IsButtonPressed(0, BUTTON_DOWN))
+	//{// 後移動
+	//	MoveCameraFunc(camera->fHAngle + D3DX_PI);
+	//}
 }
 
 //=============================================================================

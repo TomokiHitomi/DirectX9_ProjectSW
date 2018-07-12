@@ -24,7 +24,7 @@
 #define MODEL_SKYDOME_MAX			(1)
 
 // モデルスケール
-#define MODEL_SKYDOME_SCL			(10.0f)
+#define MODEL_SKYDOME_SCL			(30.0f)
 
 //*****************************************************************************
 // 構造体定義

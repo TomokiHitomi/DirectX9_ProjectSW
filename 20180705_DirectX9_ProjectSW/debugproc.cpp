@@ -103,7 +103,7 @@ void DrawDebugProc(void)
 		SceneManager::SCENE eScene = g_cScene.GetScene();
 
 		// 情報表示（白文字）
-		g_pD3DXFont->DrawText(NULL, g_aStrDebug, -1, &rect, DT_LEFT, D3DCOLOR_ARGB(0xff, 0xff, 0xff, 0xff));
+		g_pD3DXFont->DrawText(NULL, g_aStrDebug, -1, &rect, DT_LEFT, D3DCOLOR_ARGB(0xff, 0x00, 0x00, 0x00));
 
 		// 情報クリア
 		memset(g_aStrDebug, 0, sizeof g_aStrDebug);

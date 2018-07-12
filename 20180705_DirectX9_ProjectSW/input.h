@@ -102,6 +102,18 @@ enum
 	XINPUT_VIBRATION_RIGHT
 };
 
+enum INPUT_CHECK
+{
+	INPUT_UP,
+	INPUT_DOWN,
+	INPUT_LEFT,
+	INPUT_RIGHT,
+	INPUT_UP_R,
+	INPUT_DOWN_R,
+	INPUT_LEFT_R,
+	INPUT_RIGHT_R
+};
+
 //*****************************************************************************
 // プロトタイプ宣言
 //*****************************************************************************
@@ -135,4 +147,5 @@ bool XButtonTrigger(int padNo, DWORD button);
 bool XButtonRelease(int padNo, DWORD button);
 int GetXInputPacCount(void);
 void SetXInputVibration(int padNo, int nFlag, WORD wVib);
+bool InputPress(INPUT_CHECK eInput);
 #endif

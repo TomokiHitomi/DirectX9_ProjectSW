@@ -90,6 +90,9 @@
     <ClCompile Include="XModel.cpp">
       <Filter>ソース ファイル\Model</Filter>
     </ClCompile>
+    <ClCompile Include="cube.cpp">
+      <Filter>ソース ファイル\Object\Test</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -151,6 +154,9 @@
     </ClInclude>
     <ClInclude Include="XModel.h">
       <Filter>ソース ファイル\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="cube.h">
+      <Filter>ソース ファイル\Object\Test</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

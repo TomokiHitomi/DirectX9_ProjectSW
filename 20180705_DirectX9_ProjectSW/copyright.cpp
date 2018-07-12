@@ -31,7 +31,7 @@
 Copyright::Copyright(void)
 {
 	// オブジェクトIDとプライオリティの設定処理
-	SetIdAndPriority(ObjectID::COPYRIGHT, Priority::High, Priority::Middle);
+	SetIdAndPriority(ObjectID::COPYRIGHT, Priority::High, Priority::Lowest);
 
 	LPDIRECT3DDEVICE9 pDevice = GetDevice();
 	

@@ -76,7 +76,6 @@ void Object::Release(void)
 		}
 	}
 
-
 	delete this;
 }
 
@@ -246,6 +245,10 @@ void Object::ReleaseAll(void)
 	Object *pNext = NULL;
 	for (unsigned int i = 0; i < ObjectRootMax; i++)
 	{
+		// ルートポインタをpListに格納
+		pList = GetObjectRoot(ObjectRoot(i));
+
+		// NULLがくるまでpListをたどる
 		while (pList != NULL)
 		{
 			pNext = pList->GetObjectNext(ObjectRoot(i));

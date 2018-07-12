@@ -44,7 +44,8 @@ public:
 		COPYRIGHT,
 		FRAME,
 		PLAYER,
-		SKYDOME
+		SKYDOME,
+		CUBE
 	};
 	// ルートポインタ
 	enum ObjectRoot

@@ -19,6 +19,7 @@
 #include "light.h"
 #include "player.h"
 #include "skydome.h"
+#include "cube.h"
 
 /* Debug */
 #ifdef _DEBUG
@@ -36,6 +37,7 @@
 //*****************************************************************************
 // グローバル変数
 //*****************************************************************************
+
 
 //=============================================================================
 // 更新処理
@@ -60,17 +62,9 @@ TitleScene::TitleScene(void)
 {
 	new Copyright;
 	new AirWaterFream;
-	new Copyright;
-	new AirWaterFream;
-	new AirWaterFream;
-
-	new Copyright;
-	new AirWaterFream;
-	new AirWaterFream;
-	new Copyright;
-	new AirWaterFream;
 	new Player;
 	new Skydome;
+	new Cube;
 }
 
 //=============================================================================

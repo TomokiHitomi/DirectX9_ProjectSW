@@ -22,7 +22,7 @@
 
 
 #define CAMERA_V_ANGLE			(4.71f)
-#define CAMERA_H_ANGLE			(D3DX_PI * 1.5f)
+#define CAMERA_H_ANGLE			(D3DX_PI * 0.5f)
 #define CAMERA_V_ANGLE_MAX					(6.28f)
 #define CAMERA_V_ANGLE_MIN					(3.16f)
 
@@ -84,6 +84,7 @@ typedef struct
 void InitCamera(void);
 void UninitCamera(void);
 void UpdateCamera(void);
+void SetCameraAt(D3DXVECTOR3);
 void SetCamera(void);
 D3DXMATRIX GetInvRotateMat(D3DXVECTOR3 pos);
 D3DXMATRIX GetMtxView(void);
