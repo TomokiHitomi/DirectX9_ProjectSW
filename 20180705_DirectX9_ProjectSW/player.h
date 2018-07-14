@@ -22,7 +22,7 @@
 // モデルスケール
 #define PLAYER_SCL					(0.5f)
 #define PLAYER_MOVE_SPEED			(3.0f)
-#define PLAYER_ROT_SPEED			(0.01f)
+#define PLAYER_ROT_SPEED			(0.05f)
 #define PLAYER_HEIGHT				(30.0f)
 #define PLAYER_MOVE_INERTIA			(0.3f)
 #define PLAYER_ROT_INERTIA			(0.3f)

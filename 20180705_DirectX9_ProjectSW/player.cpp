@@ -83,7 +83,7 @@ void Player::Update(void)
 
 		// ワールド変換
 		//WorldConvert(&m_mtxWorld, m_vPos, m_vRot, m_vScl);
-		//WorldConvertPR(&m_mtxWorld, m_vPos, m_vRot, m_vScl);
+		WorldConvertPR(&m_mtxWorld, m_vPos, m_vRot, m_vScl);
 
 		// アニメーション更新処理
 		m_CSkinMesh->Update(m_mtxWorld);
@@ -211,89 +211,222 @@ void Player::Move(void)
 	//// 回転慣性を適用
 	//m_vRotIner -= m_vRotIner * PLAYER_ROT_INERTIA;
 
-	// カメラをモデルにセット
-	D3DXVECTOR3 vTemp = m_vPos;
-	vTemp.y += PLAYER_HEIGHT;
-	SetCameraAt(vTemp);
+
 
 	// やるぜぇぇぇええ
 
 	//D3DXVECTOR3 vTa = D3DXVECTOR3(0.0f, 1.0f, 0.0f);
-	D3DXVECTOR3 vAxis = D3DXVECTOR3(cosf(m_vRotIner.z), sinf(m_vRotIner.z), 0.0f);
-	//D3DXVECTOR3 vTa = D3DXVECTOR3(-sinf(m_vRotIner.z), cosf(m_vRotIner.z), 0.0f);
+//	D3DXVECTOR3 vAxis = D3DXVECTOR3(cosf(m_vRotIner.z), sinf(m_vRotIner.z), 0.0f);
+//	//D3DXVECTOR3 vTa = D3DXVECTOR3(-sinf(m_vRotIner.z), cosf(m_vRotIner.z), 0.0f);
+//
+//	D3DXVECTOR3 vTa = D3DXVECTOR3(cosf(D3DX_PI * 0.5f + m_vRotIner.z), sinf(D3DX_PI * 0.5f + m_vRotIner.z), 0.0f);
+//
+//	//D3DXVECTOR3 vTa;
+//	//D3DXVECTOR3 vUpTemp = D3DXVECTOR3(0.0f, 1.0f, 0.0f);
+//	//CrossProduct(&vTa, &vAxis, &vUpTemp);
+//
+//
+//
+//	////void QuaternionCalculate(D3DXVECTOR3 *pOrigin, D3DXVECTOR3 *pAxis, float fAngle, D3DXVECTOR3 *pPos)
+//	////{
+//	// 反数、処理結果用の変数を定義
+//	D3DXQUATERNION qReversal, qAnswer, qAnswer2;
+//	// 回転させたい点の初期位置
+//	D3DXQUATERNION qOrigin(vTa.x, vTa.y, vTa.z, 0.0f);
+//	// 単位クォータニオン
+//	D3DXQUATERNION qQuaternion(0.0f, 0.0f, 0.0f, 1.0f);
+//
+//	// 軸pAxis回りの回転クォータニオンを生成
+//	D3DXQuaternionRotationAxis(&qQuaternion, &vAxis, m_vRotIner.x);
+//	// XYZマイナスの共役を算出
+//	D3DXQuaternionConjugate(&qReversal, &qQuaternion);
+//	// qReversal・qOrigin・qQuaternionを行列計算
+//	D3DXQuaternionMultiply(&qAnswer, &qReversal, &qOrigin);
+//	// qAnswerに回転処理後の結果を格納
+//	D3DXQuaternionMultiply(&qAnswer, &qAnswer, &qQuaternion);
+//
+//	//D3DXVECTOR3 vAxis2 = D3DXVECTOR3(qAnswer.x, qAnswer.y, qAnswer.z);
+//	//D3DXVECTOR3 vTa2 = D3DXVECTOR3(-sinf(m_vRotIner.z), qAnswer.x, 0.0f);
+//
+//	//// 回転させたい点の初期位置
+//	//D3DXQUATERNION qOrigin2(vTa2.x, vTa2.y, vTa2.z, 0.0f);
+//
+//	//// 軸pAxis回りの回転クォータニオンを生成
+//	//D3DXQuaternionRotationAxis(&qQuaternion, &vAxis2, D3DX_PI *0.5f + m_vRotIner.x);
+//	//// XYZマイナスの共役を算出
+//	//D3DXQuaternionConjugate(&qReversal, &qQuaternion);
+//	//// qReversal・qOrigin・qQuaternionを行列計算
+//	//D3DXQuaternionMultiply(&qAnswer2, &qReversal, &qOrigin2);
+//	//// qAnswerに回転処理後の結果を格納
+//	//D3DXQuaternionMultiply(&qAnswer2, &qAnswer2, &qQuaternion);
+//
+//	 //回転処理の結果を反映
+//	m_vPos.x += qAnswer.x;
+//	m_vPos.y += qAnswer.y;
+//	m_vPos.z += qAnswer.z;
+//
+//	D3DXVECTOR3 vLook = m_vPos +
+//		D3DXVECTOR3(qAnswer.x, qAnswer.y, qAnswer.z) * 50.0f;
+//
+//	Cube::SetPos(m_vPos + 
+//		D3DXVECTOR3(qAnswer.x, qAnswer.y, qAnswer.z) * 50.0f);
+//
+//
+//
+//
+//
+//#ifdef _DEBUG
+//	PrintDebugProc("Axis [%f,%f,%f]\n", vAxis.x, vAxis.y, vAxis.z);
+//	PrintDebugProc("vTa [%f,%f,%f]\n", vTa.x, vTa.y, vTa.z);
+//	PrintDebugProc("vAns [%f,%f,%f,%f]\n", qAnswer.x, qAnswer.y, qAnswer.z, qAnswer.w);
+//#endif
 
-	D3DXVECTOR3 vTa = D3DXVECTOR3(cosf(D3DX_PI * 0.5f + m_vRotIner.z), sinf(D3DX_PI * 0.5f + m_vRotIner.z), 0.0f);
+	D3DXMATRIX mtxScl, mtxRot, mtxRotX, mtxRotY, mtxRotZ, mtxTranslate;
 
-	////void QuaternionCalculate(D3DXVECTOR3 *pOrigin, D3DXVECTOR3 *pAxis, float fAngle, D3DXVECTOR3 *pPos)
-	////{
-	// 反数、処理結果用の変数を定義
-	D3DXQUATERNION qReversal, qAnswer, qAnswer2;
-	// 回転させたい点の初期位置
-	D3DXQUATERNION qOrigin(vTa.x, vTa.y, vTa.z, 0.0f);
-	// 単位クォータニオン
-	D3DXQUATERNION qQuaternion(0.0f, 0.0f, 0.0f, 1.0f);
 
-	// 軸pAxis回りの回転クォータニオンを生成
-	D3DXQuaternionRotationAxis(&qQuaternion, &vAxis, m_vRotIner.x);
-	// XYZマイナスの共役を算出
-	D3DXQuaternionConjugate(&qReversal, &qQuaternion);
-	// qReversal・qOrigin・qQuaternionを行列計算
-	D3DXQuaternionMultiply(&qAnswer, &qReversal, &qOrigin);
-	// qAnswerに回転処理後の結果を格納
-	D3DXQuaternionMultiply(&qAnswer, &qAnswer, &qQuaternion);
 
-	D3DXVECTOR3 vAxis2 = D3DXVECTOR3(qAnswer.x, qAnswer.y, qAnswer.z);
-	D3DXVECTOR3 vTa2 = D3DXVECTOR3(-sinf(m_vRotIner.z), qAnswer.x, 0.0f);
 
-	// 回転させたい点の初期位置
-	D3DXQUATERNION qOrigin2(vTa2.x, vTa2.y, vTa2.z, 0.0f);
-
-	// 軸pAxis回りの回転クォータニオンを生成
-	D3DXQuaternionRotationAxis(&qQuaternion, &vAxis2, D3DX_PI *0.5f + m_vRotIner.x);
-	// XYZマイナスの共役を算出
-	D3DXQuaternionConjugate(&qReversal, &qQuaternion);
-	// qReversal・qOrigin・qQuaternionを行列計算
-	D3DXQuaternionMultiply(&qAnswer2, &qReversal, &qOrigin2);
-	// qAnswerに回転処理後の結果を格納
-	D3DXQuaternionMultiply(&qAnswer2, &qAnswer2, &qQuaternion);
-
-	 //回転処理の結果を反映
-	m_vPos.x += qAnswer.x;
-	m_vPos.y += qAnswer.y;
-	m_vPos.z += qAnswer.z;
-
-	D3DXVECTOR3 vLook = m_vPos +
-		D3DXVECTOR3(qAnswer.x, qAnswer.y, qAnswer.z) * 50.0f;
-
-	Cube::SetPos(m_vPos + 
-		D3DXVECTOR3(qAnswer.x, qAnswer.y, qAnswer.z) * 50.0f);
+	//m_qText = qAnswer;
 
 
 
 
 
-#ifdef _DEBUG
-	PrintDebugProc("Axis [%f,%f,%f]\n", vAxis.x, vAxis.y, vAxis.z);
-	PrintDebugProc("vTa [%f,%f,%f]\n", vTa.x, vTa.y, vTa.z);
-	PrintDebugProc("vAns [%f,%f,%f,%f]\n", qAnswer.x, qAnswer.y, qAnswer.z, qAnswer.w);
-#endif
+	//Cube::SetPos(m_vRot);
 
-	D3DXMATRIX mtxScl, mtxRot, mtxTranslate;
+	//// 回転半径を設定
+	//D3DXVECTOR3 vTa = D3DXVECTOR3(0.0f, 1.0f, 0.0f);
+	//D3DXVECTOR3 vZero = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	//D3DXVECTOR3 vAxis;
 
+	//// 現在の角度に垂直な回転軸ベクトルを設定
+	//vAxis = D3DXVECTOR3(cosf(m_vRot.z), 0, sinf(m_vRot.z));
 
+	//// クォータニオン処理
+	//QuaternionCalculate(&vTa, &vAxis, D3DX_PI * 1.5f + m_vRot.x,
+	//	&vZero);
 
+	//// 回転軸に設置
+	//Cube::SetPos((m_vPos + vZero) * 100.0f);
+	//m_vPos += vZero;
 
-	m_qText = qAnswer;
-
-
+	//D3DXMATRIX mtxScl, mtxRot, mtxTranslate;
 
 	/******************** ワールド変換 ********************/
 	// ワールドマトリクスの初期化
 	D3DXMatrixIdentity(&m_mtxWorld);
 
-	// 【S】スケールを反映(Multiplyは行列計算)
-	D3DXMatrixScaling(&mtxScl, m_vScl.x, m_vScl.y, m_vScl.z);
-	D3DXMatrixMultiply(&m_mtxWorld, &m_mtxWorld, &mtxScl);
+
+
+	// 【R】回転を反映(YawPitchRollはy,x,z)
+
+
+	//D3DXMatrixRotationZ(&mtxRot, m_vRotIner.z);
+	//D3DXMatrixMultiply(&m_mtxWorld, &m_mtxWorld, &mtxRot);
+
+	//D3DXVECTOR3 vAxisTemp = D3DXVECTOR3(
+	//	m_mtxWorld._41,
+	//	m_mtxWorld._42,
+	//	m_mtxWorld._43
+	//);
+
+	//D3DXMatrixRotationAxis(&m_mtxWorld, &vAxisTemp, m_vRotIner.z);
+	//D3DXMatrixMultiply(&m_mtxWorld, &m_mtxWorld, &mtxRot);
+
+	//D3DXMatrixIdentity(&mtxRot);
+
+	//D3DXMatrixRotationX(&mtxRotX, m_vRotIner.x);
+	//D3DXMatrixMultiply(&mtxRot, &mtxRot, &mtxRotX);
+
+	//D3DXMatrixRotationY(&mtxRotY, m_vRotIner.y);
+	//D3DXMatrixMultiply(&mtxRot, &mtxRot, &mtxRotY);
+
+	//D3DXMatrixRotationZ(&mtxRotZ, m_vRotIner.z);
+	//D3DXMatrixMultiply(&mtxRot, &mtxRot, &mtxRotZ);
+
+	// 【T】平行移動を反映(オブジェクトを配置している）
+	D3DXMatrixTranslation(&mtxTranslate, 0.0f, 0.0f, -2.0f);
+	D3DXMatrixMultiply(&m_mtxWorld, &m_mtxWorld, &mtxTranslate);
+
+
+	D3DXMatrixRotationX(&mtxRotX, m_vRotIner.x);
+	D3DXMatrixRotationY(&mtxRotY, m_vRotIner.y);
+	D3DXMatrixRotationZ(&mtxRotZ, m_vRotIner.z);
+
+
+	D3DXMatrixMultiply(&mtxRotX, &mtxRotX, &mtxRotZ);
+	D3DXMatrixMultiply(&m_mtxWorld, &m_mtxWorld, &mtxRotX);
+
+
+
+
+	//m_mtxWorld = mtxRotX * mtxRotY * mtxRotZ * mtxTranslate;
+
+	//m_mtxWorld = mtxRotZ * mtxTranslate;
+
+	//D3DXMatrixRotationY(&mtxRotY, m_vRotIner.y);
+	//D3DXMatrixMultiply(&m_mtxWorld, &m_mtxWorld, &mtxRotY);
+
+
+
+
+	//D3DXMatrixMultiply(&mtxRot, &mtxRotX, &mtxRotY);
+	//D3DXMatrixMultiply(&mtxRot, &mtxRot, &mtxRotZ);
+
+	//D3DXMatrixMultiply(&mtxRot, &mtxRotY, &mtxRotZ);
+	//D3DXMatrixMultiply(&mtxRot, &mtxRot, &mtxRotX);
+
+
+	//D3DXMatrixMultiply(&m_mtxWorld, &m_mtxWorld, &mtxRot);
+
+	//D3DXMatrixRotationX(&mtxRot2, m_vRotIner.x);
+	//D3DXMatrixMultiply(&m_mtxWorld, &m_mtxWorld, &mtxRot2);
+
+
+
+
+
+	////D3DXMatrixRotationZ(&mtxRot, r	ot.z);
+	//D3DXMatrixMultiply(world, world, &mtxRot);
+
+	//D3DXMatrixMultiply(&m_mtxWorld, &m_mtxWorld, &mtxRot);
+
+	//D3DXMatrixRotationYawPitchRoll(&mtxRot, 0.0f, m_vRotIner.x, 0.0f);
+	//D3DXMatrixMultiply(&m_mtxWorld, &m_mtxWorld, &mtxRot);
+
+	//D3DXMatrixRotationYawPitchRoll(&mtxRot, 0.0f, 0.0f, m_vRotIner.z);
+	//D3DXMatrixMultiply(&m_mtxWorld, &m_mtxWorld, &mtxRot);
+
+
+
+
+	D3DXVECTOR3 vTempMove;
+	vTempMove = D3DXVECTOR3(
+		m_mtxWorld._41,
+		m_mtxWorld._42,
+		m_mtxWorld._43);
+
+	Cube::SetPos(m_vPos + 
+		vTempMove * 50.0f);
+
+#ifdef _DEBUG
+	PrintDebugProc("mtx [%f,%f,%f]\n", m_mtxWorld._41, m_mtxWorld._42, m_mtxWorld._43);
+#endif
+
+	//D3DXVECTOR3 vPos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	//D3DXVECTOR3 vScl = D3DXVECTOR3(1.0f, 1.0f, 1.0f);
+
+	//WorldConvertPR(&m_mtxWorld, vPos, m_vRot, vScl);
+
+
+
+	/******************** ワールド変換 ********************/
+	//// ワールドマトリクスの初期化
+	//D3DXMatrixIdentity(&m_mtxWorld);
+
+	//// 【S】スケールを反映(Multiplyは行列計算)
+	//D3DXMatrixScaling(&mtxScl, m_vScl.x, m_vScl.y, m_vScl.z);
+	//D3DXMatrixMultiply(&m_mtxWorld, &m_mtxWorld, &mtxScl);
 
 	//// 【R】回転を反映(YawPitchRollはy,x,z)
 
@@ -320,103 +453,58 @@ void Player::Move(void)
 	//D3DXMatrixRotationYawPitchRoll(&mtxRot, 0.0f, 0.0f, m_vRotIner.z);
 	//D3DXMatrixMultiply(&m_mtxWorld, &m_mtxWorld, &mtxRot);
 
-	D3DXVECTOR3 X, Y, Z, Up;
-	//Up = D3DXVECTOR3(qAnswer2.x, qAnswer2.y, qAnswer2.z);
-	Up = D3DXVECTOR3(0.0f, 1.0f, 0.0f);
 
-	Z = vLook - m_vPos;
-	D3DXVec3Normalize(&Z, &Z);
-	D3DXVec3Normalize(&Up, &Up);
-	D3DXVec3Cross(&X, D3DXVec3Normalize(&Y, &Up), &Z);
-	D3DXVec3Normalize(&X, &X);
-	D3DXVec3Normalize(&Y, D3DXVec3Cross(&Y, &Z, &X));
+	//D3DXVECTOR3 vLook = m_vPos +
+	//	D3DXVECTOR3(m_mtxWorld._41, m_mtxWorld._42, m_mtxWorld._43) * 50.0f;
 
-	mtxRot._11 = X.x;
-	mtxRot._12 = X.y;
-	mtxRot._13 = X.z;
-	mtxRot._14 = 0.0f;
+	//D3DXVECTOR3 X, Y, Z, Up;
+	////Up = D3DXVECTOR3(qAnswer2.x, qAnswer2.y, qAnswer2.z);
+	//Up = D3DXVECTOR3(0.0f, 1.0f, 0.0f);
 
-	mtxRot._21 = Y.x;
-	mtxRot._22 = Y.y;
-	mtxRot._23 = Y.z;
-	mtxRot._24 = 0.0f;
+	//Z = vLook - m_vPos;
+	//D3DXVec3Normalize(&Z, &Z);
+	//D3DXVec3Normalize(&Up, &Up);
+	//D3DXVec3Cross(&X, D3DXVec3Normalize(&Y, &Up), &Z);
+	//D3DXVec3Normalize(&X, &X);
+	//D3DXVec3Normalize(&Y, D3DXVec3Cross(&Y, &Z, &X));
 
-	mtxRot._31 = -Z.x;
-	mtxRot._32 = -Z.y;
-	mtxRot._33 = -Z.z;
-	mtxRot._34 = 0.0f;
+	//mtxRot._11 = X.x;
+	//mtxRot._12 = X.y;
+	//mtxRot._13 = X.z;
+	//mtxRot._14 = 0.0f;
 
-	mtxRot._41 =
-		mtxRot._42 =
-		mtxRot._43 = 0.0f;
-	mtxRot._44 = 1.0f;
+	//mtxRot._21 = Y.x;
+	//mtxRot._22 = Y.y;
+	//mtxRot._23 = Y.z;
+	//mtxRot._24 = 0.0f;
 
+	//mtxRot._31 = -Z.x;
+	//mtxRot._32 = -Z.y;
+	//mtxRot._33 = -Z.z;
+	//mtxRot._34 = 0.0f;
 
-	//D3DXMatrixRotationQuaternion(&mtxRot, &qAnswer);
-	D3DXMatrixMultiply(&m_mtxWorld, &m_mtxWorld, &mtxRot);
-
-
-
-	// 【T】平行移動を反映(オブジェクトを配置している）
-	D3DXMatrixTranslation(&mtxTranslate, m_vPos.x, m_vPos.y, m_vPos.z);
-	D3DXMatrixMultiply(&m_mtxWorld, &m_mtxWorld, &mtxTranslate);
+	//mtxRot._41 =
+	//	mtxRot._42 =
+	//	mtxRot._43 = 0.0f;
+	//mtxRot._44 = 1.0f;
 
 
-	//Cube::SetPos(m_vRot);
+	////D3DXMatrixRotationQuaternion(&mtxRot, &qAnswer);
+	//D3DXMatrixMultiply(&m_mtxWorld, &m_mtxWorld, &mtxRot);
 
-	//// 回転半径を設定
-	//D3DXVECTOR3 vTa = D3DXVECTOR3(0.0f, 1.0f, 0.0f);
-	//D3DXVECTOR3 vZero = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-	//D3DXVECTOR3 vAxis;
 
-	//// 現在の角度に垂直な回転軸ベクトルを設定
-	//vAxis = D3DXVECTOR3(cosf(m_vRot.z), 0, sinf(m_vRot.z));
 
-	//// クォータニオン処理
-	//QuaternionCalculate(&vTa, &vAxis, D3DX_PI * 1.5f + m_vRot.x,
-	//	&vZero);
+	//// 【T】平行移動を反映(オブジェクトを配置している）
+	//D3DXMatrixTranslation(&mtxTranslate, m_vPos.x, m_vPos.y, m_vPos.z);
+	//D3DXMatrixMultiply(&m_mtxWorld, &m_mtxWorld, &mtxTranslate);
 
-	//// 回転軸に設置
-	//Cube::SetPos((m_vPos + vZero) * 100.0f);
-	//m_vPos += vZero;
 
-//	D3DXMATRIX mtxScl, mtxRot, mtxTranslate;
-//
-//	/******************** ワールド変換 ********************/
-//	// ワールドマトリクスの初期化
-//	D3DXMatrixIdentity(&m_mtxWorld);
-//
-//	// 【T】平行移動を反映(オブジェクトを配置している）
-//	D3DXMatrixTranslation(&mtxTranslate, 0.0f, 0.0f, 1.0f);
-//	D3DXMatrixMultiply(&m_mtxWorld, &m_mtxWorld, &mtxTranslate);
-//
-//	// 【R】回転を反映(YawPitchRollはy,x,z)
-//
-//	D3DXMatrixRotationYawPitchRoll(&mtxRot, 0.0f, m_vRotIner.x, 0.0f);
-//	D3DXMatrixMultiply(&m_mtxWorld, &m_mtxWorld, &mtxRot);
-//
-//	D3DXMatrixRotationYawPitchRoll(&mtxRot, 0.0f, 0.0f, m_vRotIner.z);
-//	D3DXMatrixMultiply(&m_mtxWorld, &m_mtxWorld, &mtxRot);
-//
-//
-//
-//
-//	//D3DXVECTOR3 vPos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-//	//D3DXVECTOR3 vScl = D3DXVECTOR3(1.0f, 1.0f, 1.0f);
-//
-//	//WorldConvertPR(&m_mtxWorld, vPos, m_vRot, vScl);
-//
-//	m_vPos += D3DXVECTOR3(
-//		m_mtxWorld._41,
-//		m_mtxWorld._42,
-//		m_mtxWorld._43);
-//
-//#ifdef _DEBUG
-//	PrintDebugProc("mtx [%f,%f,%f]\n", m_mtxWorld._41, m_mtxWorld._42, m_mtxWorld._43);
-//#endif
-//
-//	//m_vRot.x = m_vRotIner.x;
-//	//m_vRot.z = m_vRotIner.z;
+	m_vPos += vTempMove;
+
+
+
+	//m_vRot.x = m_vRotIner.x;
+	//m_vRot.z = m_vRotIner.z;
 //
 //
 //	m_vRot.x = -atan2(m_mtxWorld._42,m_mtxWorld._43);
@@ -424,6 +512,11 @@ void Player::Move(void)
 //	//m_vRot.y = atan2(m_mtxWorld._41, m_mtxWorld._43);
 //
 //	m_vRot.z = -atan2(m_mtxWorld._41, m_mtxWorld._42);
+
+	// カメラをモデルにセット
+	D3DXVECTOR3 vTemp = m_vPos;
+	vTemp.y += PLAYER_HEIGHT;
+	SetCameraAt(vTemp);
 }
 
 //=============================================================================

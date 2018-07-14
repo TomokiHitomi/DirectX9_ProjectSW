@@ -55,11 +55,32 @@ void WorldConvertPR(D3DXMATRIX *world, D3DXVECTOR3 pos,
 	D3DXMatrixMultiply(world, world, &mtxScl);
 
 	// 【R】回転を反映(YawPitchRollはy,x,z)
-	D3DXMatrixRotationYawPitchRoll(&mtxRot, 0.0f, rot.x, 0.0f);
+	//D3DXMatrixRotationYawPitchRoll(&mtxRot, 0.0f, rot.x, 0.0f);
+	//D3DXMatrixMultiply(world, world, &mtxRot);
+
+	//D3DXMatrixRotationYawPitchRoll(&mtxRot, 0.0f, 0.0f, rot.z);
+	//D3DXMatrixMultiply(world, world, &mtxRot);
+
+
+	//D3DXMatrixRotationZ(&mtxRot, m_vRotIner.z);
+	//D3DXMatrixMultiply(&m_mtxWorld, &m_mtxWorld, &mtxRot);
+
+	D3DXMatrixRotationX(&mtxRot, rot.x);
 	D3DXMatrixMultiply(world, world, &mtxRot);
 
-	D3DXMatrixRotationYawPitchRoll(&mtxRot, 0.0f, 0.0f, rot.z);
-	D3DXMatrixMultiply(world, world, &mtxRot);
+	//D3DXVECTOR3 vAxis = D3DXVECTOR3(
+	//	world->_41,
+	//	world->_42,
+	//	world->_43
+	//);
+
+
+	//D3DXMatrixRotationAxis(world, &vAxis, rot.z);
+
+	////D3DXMatrixRotationZ(&mtxRot, rot.z);
+	//D3DXMatrixMultiply(world, world, &mtxRot);
+
+
 
 	// 【T】平行移動を反映(オブジェクトを配置している）
 	D3DXMatrixTranslation(&mtxTranslate, pos.x, pos.y, pos.z);
