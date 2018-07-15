@@ -31,7 +31,7 @@
 #define CAMERA_H_ANGLE_MARGIN	(D3DX_PI / 180 * 45)
 #define CAMERA_MARGIN_SPEED		(D3DX_PI / 180)
 #define CAMERA_LENGTH_SPEED			(0.1f)
-#define CAMERA_LENGTH				(100.0f)
+#define CAMERA_LENGTH				(300.0f)
 #define CAMERA_LENGTH_MIN			(10.0f)
 #define CAMERA_LENGTH_MAX			(500.0f)
 #define CAMERA_LENGTH_AUTO_SPEED	(30.0f)
@@ -84,7 +84,10 @@ typedef struct
 void InitCamera(void);
 void UninitCamera(void);
 void UpdateCamera(void);
+
 void SetCameraAt(D3DXVECTOR3);
+void SetCameraEye(D3DXVECTOR3);
+void SetCameraUp(D3DXVECTOR3);
 void SetCamera(void);
 D3DXMATRIX GetInvRotateMat(D3DXVECTOR3 pos);
 D3DXMATRIX GetMtxView(void);

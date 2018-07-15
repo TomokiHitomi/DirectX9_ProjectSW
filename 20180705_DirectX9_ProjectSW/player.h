@@ -22,7 +22,10 @@
 // モデルスケール
 #define PLAYER_SCL					(0.5f)
 #define PLAYER_MOVE_SPEED			(3.0f)
-#define PLAYER_ROT_SPEED			(0.05f)
+
+#define PLAYER_ROT_SPEED_X			(0.01f)
+#define PLAYER_ROT_SPEED_Z			(0.03f)
+
 #define PLAYER_HEIGHT				(30.0f)
 #define PLAYER_MOVE_INERTIA			(0.3f)
 #define PLAYER_ROT_INERTIA			(0.3f)
@@ -43,7 +46,8 @@ private:
 	D3DXVECTOR3		m_vRot;				// 回転情報
 	D3DXVECTOR3		m_vScl;				// 拡縮情報
 	D3DXVECTOR3		m_vMove;			// 移動量情報
-
+	D3DXVECTOR3		m_vAxisX;
+	D3DXVECTOR3		m_vAxisZ;
 	D3DXVECTOR3		m_vRotIner;			// 回転慣性情報
 
 	D3DXMATRIX		m_mtxWorld;			// ワールドマトリクス
