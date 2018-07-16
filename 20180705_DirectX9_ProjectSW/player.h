@@ -38,6 +38,11 @@
 
 #define PLAYER_ALPHA_TEST			(150)
 
+/***** FloatMode *****/
+#define PLAYER_FLOAT_ROT_X			(2.90f)
+
+/***** FlyMode *****/
+
 //*****************************************************************************
 // 構造体定義
 //*****************************************************************************
@@ -61,15 +66,12 @@ private:
 	D3DXVECTOR3		m_vRot;				// 回転情報
 	D3DXVECTOR3		m_vScl;				// 拡縮情報
 	D3DXVECTOR3		m_vMove;			// 移動量情報
+	D3DXVECTOR3		m_vRotIner;				// 回転情報
 
 	// ローカルベクトル
 	D3DXVECTOR3		m_vX;
 	D3DXVECTOR3		m_vY;
 	D3DXVECTOR3		m_vZ;
-
-	// 浮遊モード用
-	float			m_fVAngle;
-	float			m_fHAngle;
 
 	D3DXMATRIX		m_mtxWorld;			// ワールドマトリクス
 	MODE			m_eMode;

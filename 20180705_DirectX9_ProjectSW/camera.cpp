@@ -71,6 +71,14 @@ void Camera::Update(void)
 {
 	s_vEye = s_vEye + ((s_vEyeNext - s_vEye) * s_fEyeIner);
 	s_vAt = s_vAt + ((s_vAtNext - s_vAt) * s_fAtIner);
+
+#ifdef _DEBUG
+	PrintDebugProc("Åy Camera Åz\n");
+	PrintDebugProc("Eye [%f,%f,%f]  Iner[%f]\n", s_vEye.x, s_vEye.y, s_vEye.z, s_fEyeIner);
+	PrintDebugProc("At  [%f,%f,%f]  Iner[%f]\n", s_vAt.x, s_vAt.y, s_vAt.z, s_fAtIner);
+	PrintDebugProc("Up  [%f,%f,%f]  Iner[%f]\n", s_vUp.x, s_vUp.y, s_vUp.z, s_fUpIner);
+	PrintDebugProc("\n");
+#endif
 }
 
 //=============================================================================
