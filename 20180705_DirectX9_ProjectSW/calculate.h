@@ -7,7 +7,15 @@
 #ifndef _CALCULATE_H_
 #define _CALCULATE_H_
 
+/*******************************************************************************
+* インクルード
+*******************************************************************************/
 #include "main.h"
+
+//*****************************************************************************
+// マクロ定義
+//*****************************************************************************
+#define ZERO_D3DXVECTOR3		(D3DXVECTOR3(0.0f, 0.0f, 0.0f))
 
 //*****************************************************************************
 // 列挙型定義
@@ -34,9 +42,12 @@ enum
 //*****************************************************************************
 
 void WorldConvert(D3DXMATRIX*, D3DXVECTOR3, D3DXVECTOR3, D3DXVECTOR3);
-void WorldConvertPR(D3DXMATRIX *world, D3DXVECTOR3 pos, D3DXVECTOR3 rot, D3DXVECTOR3 scl);
+void WorldConvertAxis(D3DXMATRIX *world, D3DXVECTOR3 pos,
+	D3DXVECTOR3 vLook, D3DXVECTOR3 vUp, D3DXVECTOR3 scl);
+void MatrixRotationVecAndUp(D3DXMATRIX *mtxOut, D3DXVECTOR3 vLook, D3DXVECTOR3 vUp);
 float DotProduct(D3DXVECTOR3 *vl, D3DXVECTOR3 *vr);
 D3DXVECTOR3 *CrossProduct(D3DXVECTOR3 *ret, D3DXVECTOR3 *vl, D3DXVECTOR3 *vr);
+float SetLimit(float fTag, float fMax, float fMin);
 float PiCalculate180(float fAngle);
 float PiCalculate360(float fAngle);
 void QuaternionCalculate(D3DXVECTOR3 *pInit, D3DXVECTOR3 *pC, float Rad, D3DXVECTOR3 *ret);

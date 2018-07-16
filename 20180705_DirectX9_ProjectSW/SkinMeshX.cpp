@@ -778,29 +778,29 @@ VOID CSkinMesh::CreateFrameArray(LPD3DXFRAME _pFrame) {
 //=============================================================================
 VOID CSkinMesh::Update(D3DXMATRIX _World) {
 	//押しっぱなしによる連続切り替え防止
-	static bool PushFlg = false; //ここでは仮でフラグを使用するが、本来はメンバ変数などにする
-								 //アニメーション変更チェック
-	if ((GetAsyncKeyState(VK_LEFT) & 0x8000) || (GetAsyncKeyState(VK_RIGHT) & 0x8000)) {
-		if (GetAsyncKeyState(VK_LEFT) & 0x8000) {
-			if (PushFlg == false) {
-				int Num = GetAnimTrack() - 1;
-				if (Num < 0)Num = 0;
-				
-				(Num, m_fShiftTime);
-			}
-		}
-		if (GetAsyncKeyState(VK_RIGHT) & 0x8000) {
-			if (PushFlg == false) {
-				int Num = GetAnimTrack() + 1;
-				if ((DWORD)Num > m_pAnimController->GetNumAnimationSets())Num = m_pAnimController->GetNumAnimationSets();
-				ChangeAnim(Num, m_fShiftTime);
-			}
-		}
-		PushFlg = true;
-	}
-	else {
-		PushFlg = false;
-	}
+	//static bool PushFlg = false; //ここでは仮でフラグを使用するが、本来はメンバ変数などにする
+	//							 //アニメーション変更チェック
+	//if ((GetAsyncKeyState(VK_LEFT) & 0x8000) || (GetAsyncKeyState(VK_RIGHT) & 0x8000)) {
+	//	if (GetAsyncKeyState(VK_LEFT) & 0x8000) {
+	//		if (PushFlg == false) {
+	//			int Num = GetAnimTrack() - 1;
+	//			if (Num < 0)Num = 0;
+	//			
+	//			(Num, m_fShiftTime);
+	//		}
+	//	}
+	//	if (GetAsyncKeyState(VK_RIGHT) & 0x8000) {
+	//		if (PushFlg == false) {
+	//			int Num = GetAnimTrack() + 1;
+	//			if ((DWORD)Num > m_pAnimController->GetNumAnimationSets())Num = m_pAnimController->GetNumAnimationSets();
+	//			ChangeAnim(Num, m_fShiftTime);
+	//		}
+	//	}
+	//	PushFlg = true;
+	//}
+	//else {
+	//	PushFlg = false;
+	//}
 
 	// モーションブレンド確認
 	m_fCurWeight += m_fShiftTime;

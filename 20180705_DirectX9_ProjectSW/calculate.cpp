@@ -39,10 +39,10 @@ void WorldConvert(D3DXMATRIX *world, D3DXVECTOR3 pos,
 }
 
 //=============================================================================
-// ワールド変換
+// ワールド変換（MatrixRotationVecAndUp仕様）
 //=============================================================================
-void WorldConvertPR(D3DXMATRIX *world, D3DXVECTOR3 pos,
-	D3DXVECTOR3 rot, D3DXVECTOR3 scl)
+void WorldConvertAxis(D3DXMATRIX *world, D3DXVECTOR3 pos,
+	D3DXVECTOR3 vLook, D3DXVECTOR3 vUp, D3DXVECTOR3 scl)
 {
 	D3DXMATRIX mtxScl, mtxRot, mtxTranslate;
 
@@ -55,36 +55,49 @@ void WorldConvertPR(D3DXMATRIX *world, D3DXVECTOR3 pos,
 	D3DXMatrixMultiply(world, world, &mtxScl);
 
 	// 【R】回転を反映(YawPitchRollはy,x,z)
-	//D3DXMatrixRotationYawPitchRoll(&mtxRot, 0.0f, rot.x, 0.0f);
-	//D3DXMatrixMultiply(world, world, &mtxRot);
-
-	//D3DXMatrixRotationYawPitchRoll(&mtxRot, 0.0f, 0.0f, rot.z);
-	//D3DXMatrixMultiply(world, world, &mtxRot);
-
-
-	//D3DXMatrixRotationZ(&mtxRot, m_vRotIner.z);
-	//D3DXMatrixMultiply(&m_mtxWorld, &m_mtxWorld, &mtxRot);
-
-	D3DXMatrixRotationX(&mtxRot, rot.x);
+	MatrixRotationVecAndUp(&mtxRot, vLook, vUp);
 	D3DXMatrixMultiply(world, world, &mtxRot);
-
-	//D3DXVECTOR3 vAxis = D3DXVECTOR3(
-	//	world->_41,
-	//	world->_42,
-	//	world->_43
-	//);
-
-
-	//D3DXMatrixRotationAxis(world, &vAxis, rot.z);
-
-	////D3DXMatrixRotationZ(&mtxRot, rot.z);
-	//D3DXMatrixMultiply(world, world, &mtxRot);
-
-
 
 	// 【T】平行移動を反映(オブジェクトを配置している）
 	D3DXMatrixTranslation(&mtxTranslate, pos.x, pos.y, pos.z);
 	D3DXMatrixMultiply(world, world, &mtxTranslate);
+}
+
+//=============================================================================
+// 回転行列計算
+// vLookを向き、vUpを上とする回転行列をmtxOutにアウトプットする
+//=============================================================================
+void MatrixRotationVecAndUp(D3DXMATRIX *mtxOut, D3DXVECTOR3 vLook, D3DXVECTOR3 vUp)
+{
+	D3DXVECTOR3 X, Y, Z, Up;
+
+	Up = vUp;
+	Z = vLook;
+	D3DXVec3Normalize(&Z, &Z);
+	D3DXVec3Normalize(&Up, &Up);
+	D3DXVec3Cross(&X, D3DXVec3Normalize(&Y, &Up), &Z);
+	D3DXVec3Normalize(&X, &X);
+	D3DXVec3Normalize(&Y, D3DXVec3Cross(&Y, &Z, &X));
+
+	mtxOut->_11 = X.x;
+	mtxOut->_12 = X.y;
+	mtxOut->_13 = X.z;
+	mtxOut->_14 = 0.0f;
+
+	mtxOut->_21 = Y.x;
+	mtxOut->_22 = Y.y;
+	mtxOut->_23 = Y.z;
+	mtxOut->_24 = 0.0f;
+
+	mtxOut->_31 = Z.x;
+	mtxOut->_32 = Z.y;
+	mtxOut->_33 = Z.z;
+	mtxOut->_34 = 0.0f;
+
+	mtxOut->_41 = 0.0f;
+	mtxOut->_42 = 0.0f;
+	mtxOut->_43 = 0.0f;
+	mtxOut->_44 = 1.0f;
 }
 
 //=============================================================================
@@ -110,6 +123,15 @@ D3DXVECTOR3 *CrossProduct(D3DXVECTOR3 *ret, D3DXVECTOR3 *vl, D3DXVECTOR3 *vr)
 	return(ret);
 }
 
+//=============================================================================
+// 数値限界設定
+//=============================================================================
+float SetLimit(float fTag, float fMax, float fMin)
+{
+	if (fTag > fMax) { return fMax; }
+	else if (fMin > fTag) { return fMin; }
+	else { return fTag; }
+}
 //=============================================================================
 // PI調整処理（180度）
 //=============================================================================
@@ -270,3 +292,14 @@ float Calculate_Atan2XZ(D3DXVECTOR3 pos1, D3DXVECTOR3 pos2)
 	// 角度計算
 	return atan2(vecTemp.z, vecTemp.x);
 }
+
+//#ifdef _DEBUG
+//PrintDebugProc("mtxX[%f,%f,%f]\n",
+//	m_mtxWorld._11, m_mtxWorld._12, m_mtxWorld._13);
+//PrintDebugProc("mtxY[%f,%f,%f]\n",
+//	m_mtxWorld._21, m_mtxWorld._22, m_mtxWorld._23);
+//PrintDebugProc("mtxZ[%f,%f,%f]\n",
+//	m_mtxWorld._31, m_mtxWorld._32, m_mtxWorld._33);
+//PrintDebugProc("mtxA[%f,%f,%f]\n",
+//	m_mtxWorld._41, m_mtxWorld._42, m_mtxWorld._43);
+//#endif

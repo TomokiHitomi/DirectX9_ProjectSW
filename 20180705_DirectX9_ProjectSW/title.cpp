@@ -60,8 +60,8 @@ void TitleScene::Draw(void)
 //=============================================================================
 TitleScene::TitleScene(void)
 {
-	new Copyright;
-	new AirWaterFream;
+	//new Copyright;
+	//new AirWaterFream;
 	new Player;
 	new Skydome;
 	new Cube;

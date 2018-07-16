@@ -44,9 +44,17 @@ Player::Player(void)
 	m_vScl = D3DXVECTOR3(PLAYER_SCL, PLAYER_SCL, PLAYER_SCL);
 
 	m_vMove = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-	m_vRotIner = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-	m_vAxisX = D3DXVECTOR3(1.0f, 0.0f, 0.0f);
-	m_vAxisZ = D3DXVECTOR3(0.0f, 0.0f, -1.0f);
+	m_vX = D3DXVECTOR3(1.0f, 0.0f, 0.0f);
+	m_vY = D3DXVECTOR3(0.0f, 1.0f, 0.0f);
+	m_vZ = D3DXVECTOR3(0.0f, 0.0f, 1.0f);
+
+	m_fVAngle = D3DX_PI * 1.5f;
+	m_fHAngle = 0.0f;
+
+	m_eMode = MODE_FLY;
+	m_eModeOld = MODE_MAX;	// 1フレーム目はモードチェンジに入りたい
+
+	m_fMoveSpeed = PLAYER_MOVE_SPEED_MIN;
 	m_bUse = true;
 
 	// モデルの初期化
@@ -88,17 +96,40 @@ void Player::Update(void)
 		// 移動処理
 		Move();
 
+		switch (m_eMode)
+		{
+		case MODE_FLOAT:
+			Float();	// 浮遊処理
+			break;
+		case MODE_FLY:
+			Fly();		// 飛行処理
+			break;
+		}
+
+		// モードチェンジ
+		ModeChange();
+
 		// ワールド変換
-		//WorldConvert(&m_mtxWorld, m_vPos, m_vRot, m_vScl);
-		//WorldConvertPR(&m_mtxWorld, m_vPos, m_vRot, m_vScl);
+		WorldConvertAxis(&m_mtxWorld, m_vPos, m_vZ, m_vY, m_vScl);
+
+
 
 		// アニメーション更新処理
 		m_CSkinMesh->Update(m_mtxWorld);
 #ifdef _DEBUG
 		PrintDebugProc("Pos [%f,%f,%f]\n", m_vPos.x, m_vPos.y, m_vPos.z);
 		PrintDebugProc("Rot [%f,%f,%f]\n", m_vRot.x, m_vRot.y, m_vRot.z);
-		PrintDebugProc("RotI[%f,%f,%f]\n", m_vRotIner.x, m_vRotIner.y, m_vRotIner.z);
 		PrintDebugProc("Move[%f,%f,%f]\n", m_vMove.x, m_vMove.y, m_vMove.z);
+		PrintDebugProc("Spd [%f]\n", m_fMoveSpeed);
+		PrintDebugProc("vX  [%f,%f,%f]\n",
+			m_vX.x, m_vX.y, m_vX.z);
+		PrintDebugProc("vY  [%f,%f,%f]\n",
+			m_vY.x, m_vY.y, m_vY.z);
+		PrintDebugProc("vZ  [%f,%f,%f]\n",
+			m_vZ.x, m_vZ.y, m_vZ.z);
+		PrintDebugProc(" VA [%f]  HA [%f]\n",
+			m_fVAngle, m_fHAngle);
+		
 #endif
 	}
 
@@ -120,9 +151,23 @@ void Player::Draw(void)
 
 	if (m_bUse)
 	{
+		// αテストを有効に
+		pDevice->SetRenderState(D3DRS_ALPHATESTENABLE, TRUE);
+		pDevice->SetRenderState(D3DRS_ALPHAREF, PLAYER_ALPHA_TEST);
+		pDevice->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATER);
+
+		// 両面描画する
 		pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
+
+		// モデルを描画
 		m_CSkinMesh->Draw(pDevice);
+
+		// 裏面をカリングに戻す
 		pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+
+		// αテストを無効に
+		pDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
+
 	}
 
 	// ライティングを通常に戻す
@@ -130,631 +175,263 @@ void Player::Draw(void)
 	//SetLight(LIGHT_SUB2, FALSE);
 }
 
+
 //=============================================================================
-// カメラ移動関数
+// 浮遊処理
 //=============================================================================
-void Player::Move(void)
+void Player::Float(void)
 {
-	//// 移動処理
-	//if (InputPress(INPUT_LEFT))
-	//{
-	//	if (InputPress(INPUT_UP))
-	//	{// 左前移動
-	//		MoveFunc(m_vRot.y + D3DX_PI * 0.75f);
-	//	}
-	//	else if (InputPress(INPUT_DOWN))
-	//	{// 左後移動
-	//		MoveFunc(m_vRot.y + D3DX_PI * 0.25f);
-	//	}
-	//	else if (InputPress(INPUT_RIGHT))
-	//	{// 左右同時押しは処理なし
-	//	}
-	//	else
-	//	{// 左移動
-	//		MoveFunc(m_vRot.y + D3DX_PI * 0.50f);
-	//	}
-	//}
-	//else if (InputPress(INPUT_RIGHT))
-	//{
-	//	if (InputPress(INPUT_UP))
-	//	{// 右前移動
-	//		MoveFunc(m_vRot.y - D3DX_PI * 0.75f);
-	//	}
-	//	else if (InputPress(INPUT_DOWN))
-	//	{// 右後移動
-	//		MoveFunc(m_vRot.y - D3DX_PI * 0.25f);
-	//	}
-	//	else
-	//	{// 右移動
-	//		MoveFunc(m_vRot.y - D3DX_PI * 0.50f);
-	//	}
-	//}
-	//else if (InputPress(INPUT_UP))
-	//{// 前移動
-	//	if (InputPress(INPUT_DOWN))
-	//	{// 前後同時押しは処理なし
-	//	}
-	//	else
-	//	{
-	//		MoveFunc(m_vRot.y + D3DX_PI);
-	//	}
-	//}
-	//else if (GetKeyboardPress(DIK_S) || IsButtonPressed(0, BUTTON_DOWN))
-	//{// 後移動
-	//	MoveFunc(m_vRot.y);
-	//}
-	D3DXVECTOR3 vRot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	m_vY = m_vY + (D3DXVECTOR3(0.0f, 1.0f, 0.0f)- m_vY) * 0.1f;
 
-	if (InputPress(INPUT_UP) && InputPress(INPUT_DOWN))
+	m_fHAngle = atan2(m_vZ.z, m_vZ.x);
+	//m_vZ = m_vZ + (D3DXVECTOR3(cosf(m_fHAngle), 0.0f, sinf(m_fHAngle)) - m_vZ) * 0.1f;
+
+
+	if (InputPress(INPUT_UP_R) && InputPress(INPUT_DOWN_R))
 	{
-		// 同時押しは処理なし
 	}
-	else if (InputPress(INPUT_UP))
+	else if (InputPress(INPUT_UP_R))
 	{
-		vRot.x += PLAYER_ROT_SPEED_X;
-		m_vRotIner.x += PLAYER_ROT_SPEED_X;
+		m_fVAngle += 0.05f;
 	}
-	else if (InputPress(INPUT_DOWN))
+	else if (InputPress(INPUT_DOWN_R))
 	{
-		vRot.x -= PLAYER_ROT_SPEED_X;
-		m_vRotIner.x -= PLAYER_ROT_SPEED_X;
+		m_fVAngle -= 0.05f;
 	}
 
-	if (InputPress(INPUT_LEFT) && InputPress(INPUT_RIGHT))
+	if (InputPress(INPUT_LEFT_R) && InputPress(INPUT_RIGHT_R))
 	{
-		// 同時押しは処理なし
 	}
-	else if (InputPress(INPUT_LEFT))
+	else if (InputPress(INPUT_LEFT_R))
 	{
-		vRot.z += PLAYER_ROT_SPEED_Z;
-		m_vRotIner.z += PLAYER_ROT_SPEED_Z;
+		m_fHAngle += 0.5f;
+	}
+	else if (InputPress(INPUT_RIGHT_R))
+	{
+		m_fHAngle -= 0.5f;
+	}
+
+	m_vZ = m_vZ + (D3DXVECTOR3(cosf(m_fHAngle), 0.0f, sinf(m_fHAngle)) - m_vZ) * 0.1f;
+	CrossProduct(&m_vX, &m_vY, &m_vZ);
+
+
+
+	D3DXVECTOR3 vEye = m_vY * 100;
+
+	// ロール回転を計算し、ピッチ回転用の軸を求める
+	QuaternionCalculate(&vEye, &m_vX, m_fVAngle, &vEye);
+
+
+	// 移動処理
+	if (InputPress(INPUT_LEFT))
+	{
+		if (InputPress(INPUT_UP))
+		{// 左前移動
+			MoveFunc(m_fHAngle + D3DX_PI * 0.25f);
+		}
+		else if (InputPress(INPUT_DOWN))
+		{// 左後移動
+			MoveFunc(m_fHAngle + D3DX_PI * 0.75f);
+		}
+		else if (InputPress(INPUT_RIGHT))
+		{// 左右同時押しは処理なし
+		}
+		else
+		{// 左移動
+			MoveFunc(m_fHAngle + D3DX_PI * 0.50f);
+		}
 	}
 	else if (InputPress(INPUT_RIGHT))
 	{
-		vRot.z -= PLAYER_ROT_SPEED_Z;
-		m_vRotIner.z -= PLAYER_ROT_SPEED_Z;
+		if (InputPress(INPUT_UP))
+		{// 右前移動
+			MoveFunc(m_fHAngle - D3DX_PI * 0.25f);
+		}
+		else if (InputPress(INPUT_DOWN))
+		{// 右後移動
+			MoveFunc(m_fHAngle - D3DX_PI * 0.75f);
+		}
+		else
+		{// 右移動
+			MoveFunc(m_fHAngle - D3DX_PI * 0.50f);
+		}
+	}
+	else if (InputPress(INPUT_UP))
+	{// 前移動
+		if (InputPress(INPUT_DOWN))
+		{// 前後同時押しは処理なし
+		}
+		else
+		{
+			MoveFunc(m_fHAngle);
+		}
+	}
+	else if (InputPress(INPUT_DOWN))
+	{// 後移動
+		MoveFunc(m_fHAngle + D3DX_PI);
 	}
 
-
-	//// 回転量をロットに適用
-	//m_vRot += m_vRotIner;
-
-	//// 回転慣性を適用
-	//m_vRotIner -= m_vRotIner * PLAYER_ROT_INERTIA;
-
-
-
-	// やるぜぇぇぇええ
-
-	//D3DXVECTOR3 vTa = D3DXVECTOR3(0.0f, 1.0f, 0.0f);
-//	D3DXVECTOR3 vAxis = D3DXVECTOR3(cosf(m_vRotIner.z), sinf(m_vRotIner.z), 0.0f);
-//	//D3DXVECTOR3 vTa = D3DXVECTOR3(-sinf(m_vRotIner.z), cosf(m_vRotIner.z), 0.0f);
-//
-//	D3DXVECTOR3 vTa = D3DXVECTOR3(cosf(D3DX_PI * 0.5f + m_vRotIner.z), sinf(D3DX_PI * 0.5f + m_vRotIner.z), 0.0f);
-//
-//	//D3DXVECTOR3 vTa;
-//	//D3DXVECTOR3 vUpTemp = D3DXVECTOR3(0.0f, 1.0f, 0.0f);
-//	//CrossProduct(&vTa, &vAxis, &vUpTemp);
-//
-//
-//
-//	////void QuaternionCalculate(D3DXVECTOR3 *pOrigin, D3DXVECTOR3 *pAxis, float fAngle, D3DXVECTOR3 *pPos)
-//	////{
-// ワールドマトリクスの初期化
-	D3DXMatrixIdentity(&m_mtxWorld);
-	D3DXMATRIX mtxScl, mtxRot, mtxRotX, mtxRotY, mtxRotZ, mtxTranslate;
-
-	//D3DXMatrixTranslation(&mtxTranslate, 0.0f, 0.0f, -2.0f);
-	//D3DXMatrixMultiply(&m_mtxWorld, &m_mtxWorld, &mtxTranslate);
-
-	//D3DXMatrixTranslation(&mtxTranslate, m_vPos.x, m_vPos.y, m_vPos.z);
-	//D3DXMatrixMultiply(&m_mtxWorld, &m_mtxWorld, &mtxTranslate);
-
-
-	// 反数、処理結果用の変数を定義
-	D3DXQUATERNION qReversal, qAnswer, qAnswer2, qOrigin, qQuaternion;
-	// 回転させたい点の初期位置
-	qOrigin = D3DXQUATERNION(m_vAxisX.x, m_vAxisX.y, m_vAxisX.z, 0.0f);
-	// 単位クォータニオン
-	qQuaternion = D3DXQUATERNION(0.0f, 0.0f, 0.0f, 1.0f);
-
-	// 軸pAxis回りの回転クォータニオンを生成
-	D3DXQuaternionRotationAxis(&qQuaternion, &m_vAxisZ, vRot.z);
-	// XYZマイナスの共役を算出
-	D3DXQuaternionConjugate(&qReversal, &qQuaternion);
-	// qReversal・qOrigin・qQuaternionを行列計算
-	D3DXQuaternionMultiply(&qAnswer, &qReversal, &qOrigin);
-	// qAnswerに回転処理後の結果を格納
-	D3DXQuaternionMultiply(&qAnswer, &qAnswer, &qQuaternion);
-
-	
-	//D3DXMatrixRotationQuaternion(&mtxRot, &qAnswer);
-	//D3DXMatrixMultiply(&m_mtxWorld, &m_mtxWorld, &mtxRot);
-
-	m_vAxisX = D3DXVECTOR3(qAnswer.x, qAnswer.y, qAnswer.z);
-
-	PrintDebugProc("QuaX[%f,%f,%f]\n",
-		qAnswer.x, qAnswer.y, qAnswer.z);
-
-	D3DXQUATERNION AnsTemp = qAnswer;
-
-	//mtxRot._11 = 1.0f - 2.0f * qAnswer.y * qAnswer.y - 2.0f * qAnswer.z * qAnswer.z;
-	//mtxRot._12 = 2.0f * qAnswer.x * qAnswer.y + 2.0f * qAnswer.w * qAnswer.z;
-	//mtxRot._13 = 2.0f * qAnswer.x * qAnswer.z - 2.0f * qAnswer.w * qAnswer.y;
-	//mtxRot._14 = 0.0f;
-
-	//mtxRot._21 = 2.0f * qAnswer.x * qAnswer.y - 2.0f * qAnswer.w * qAnswer.z;
-	//mtxRot._22 = 1.0f - 2.0f * qAnswer.x * qAnswer.x - 2.0f * qAnswer.z * qAnswer.z;
-	//mtxRot._23 = 2.0f * qAnswer.y * qAnswer.z + 2.0f * qAnswer.w * qAnswer.x;
-	//mtxRot._24 = 0.0f;
-
-	//mtxRot._31 = 2.0f * qAnswer.x * qAnswer.z + 2.0f * qAnswer.w * qAnswer.y;
-	//mtxRot._32 = 2.0f * qAnswer.y * qAnswer.z - 2.0f * qAnswer.w * qAnswer.x;
-	//mtxRot._33 = 1.0f - 2.0f * qAnswer.x * qAnswer.x - 2.0f * qAnswer.y * qAnswer.y;
-	//mtxRot._34 = 0.0f;
-
-	//mtxRot._41 =
-	//	mtxRot._42 =
-	//	mtxRot._43 = 0.0f;
-	//mtxRot._44 = 1.0f;
-
-	//D3DXMatrixMultiply(&m_mtxWorld, &m_mtxWorld, &mtxRot);
-
-
-	
-	// 回転させたい点の初期位置
-	qOrigin = D3DXQUATERNION(m_vAxisZ.x, m_vAxisZ.y, m_vAxisZ.z, 0.0f);
-	// 単位クォータニオン
-	qQuaternion = D3DXQUATERNION(0.0f, 0.0f, 0.0f, 1.0f);
-
-	// 軸pAxis回りの回転クォータニオンを生成
-	D3DXQuaternionRotationAxis(&qQuaternion, &m_vAxisX, vRot.x);
-	// XYZマイナスの共役を算出
-	D3DXQuaternionConjugate(&qReversal, &qQuaternion);
-	// qReversal・qOrigin・qQuaternionを行列計算
-	D3DXQuaternionMultiply(&qAnswer, &qReversal, &qOrigin);
-	// qAnswerに回転処理後の結果を格納
-	D3DXQuaternionMultiply(&qAnswer, &qAnswer, &qQuaternion);
-
-	//D3DXMatrixRotationQuaternion(&mtxRot, &qAnswer);
-	//D3DXMatrixMultiply(&m_mtxWorld, &m_mtxWorld, &mtxRot);
-
-
-
-	m_vAxisZ = D3DXVECTOR3(qAnswer.x, qAnswer.y, qAnswer.z);
-
-	PrintDebugProc("QuaZ[%f,%f,%f]\n",
-		qAnswer.x, qAnswer.y, qAnswer.z);
-
-	//mtxRot._11 = 1.0f - 2.0f * qAnswer.y * qAnswer.y - 2.0f * qAnswer.z * qAnswer.z;
-	//mtxRot._12 = 2.0f * qAnswer.x * qAnswer.y + 2.0f * qAnswer.w * qAnswer.z;
-	//mtxRot._13 = 2.0f * qAnswer.x * qAnswer.z - 2.0f * qAnswer.w * qAnswer.y;
-	//mtxRot._14 = 0.0f;
-
-	//mtxRot._21 = 2.0f * qAnswer.x * qAnswer.y - 2.0f * qAnswer.w * qAnswer.z;
-	//mtxRot._22 = 1.0f - 2.0f * qAnswer.x * qAnswer.x - 2.0f * qAnswer.z * qAnswer.z;
-	//mtxRot._23 = 2.0f * qAnswer.y * qAnswer.z + 2.0f * qAnswer.w * qAnswer.x;
-	//mtxRot._24 = 0.0f;
-
-	//mtxRot._31 = 2.0f * qAnswer.x * qAnswer.z + 2.0f * qAnswer.w * qAnswer.y;
-	//mtxRot._32 = 2.0f * qAnswer.y * qAnswer.z - 2.0f * qAnswer.w * qAnswer.x;
-	//mtxRot._33 = 1.0f - 2.0f * qAnswer.x * qAnswer.x - 2.0f * qAnswer.y * qAnswer.y;
-	//mtxRot._34 = 0.0f;
-
-	//mtxRot._41 =
-	//	mtxRot._42 =
-	//	mtxRot._43 = 0.0f;
-	//mtxRot._44 = 1.0f;
-
-	//D3DXMatrixMultiply(&m_mtxWorld, &m_mtxWorld, &mtxRot);
-
-
-	Cube::SetPos(m_vPos + m_vAxisZ * 100.0f);
-
-
-	//D3DXMatrixIdentity(&m_mtxWorld);
-
-
-	//
-//	//D3DXVECTOR3 vAxis2 = D3DXVECTOR3(qAnswer.x, qAnswer.y, qAnswer.z);
-//	//D3DXVECTOR3 vTa2 = D3DXVECTOR3(-sinf(m_vRotIner.z), qAnswer.x, 0.0f);
-//
-//	//// 回転させたい点の初期位置
-//	//D3DXQUATERNION qOrigin2(vTa2.x, vTa2.y, vTa2.z, 0.0f);
-//
-//	//// 軸pAxis回りの回転クォータニオンを生成
-//	//D3DXQuaternionRotationAxis(&qQuaternion, &vAxis2, D3DX_PI *0.5f + m_vRotIner.x);
-//	//// XYZマイナスの共役を算出
-//	//D3DXQuaternionConjugate(&qReversal, &qQuaternion);
-//	//// qReversal・qOrigin・qQuaternionを行列計算
-//	//D3DXQuaternionMultiply(&qAnswer2, &qReversal, &qOrigin2);
-//	//// qAnswerに回転処理後の結果を格納
-//	//D3DXQuaternionMultiply(&qAnswer2, &qAnswer2, &qQuaternion);
-//
-//	 //回転処理の結果を反映
-//	m_vPos.x += qAnswer.x;
-//	m_vPos.y += qAnswer.y;
-//	m_vPos.z += qAnswer.z;
-//
-//	D3DXVECTOR3 vLook = m_vPos +
-//		D3DXVECTOR3(qAnswer.x, qAnswer.y, qAnswer.z) * 50.0f;
-//
-//	Cube::SetPos(m_vPos + 
-//		D3DXVECTOR3(qAnswer.x, qAnswer.y, qAnswer.z) * 50.0f);
-//
-//
-//
-//
-//
-//#ifdef _DEBUG
-//	PrintDebugProc("Axis [%f,%f,%f]\n", vAxis.x, vAxis.y, vAxis.z);
-//	PrintDebugProc("vTa [%f,%f,%f]\n", vTa.x, vTa.y, vTa.z);
-//	PrintDebugProc("vAns [%f,%f,%f,%f]\n", qAnswer.x, qAnswer.y, qAnswer.z, qAnswer.w);
-//#endif
-
-
-
-
-
-	//m_qText = qAnswer;
-
-
-
-
-
-	//Cube::SetPos(m_vRot);
-
-	//// 回転半径を設定
-	//D3DXVECTOR3 vTa = D3DXVECTOR3(0.0f, 1.0f, 0.0f);
-	//D3DXVECTOR3 vZero = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-	//D3DXVECTOR3 vAxis;
-
-	//// 現在の角度に垂直な回転軸ベクトルを設定
-	//vAxis = D3DXVECTOR3(cosf(m_vRot.z), 0, sinf(m_vRot.z));
-
-	//// クォータニオン処理
-	//QuaternionCalculate(&vTa, &vAxis, D3DX_PI * 1.5f + m_vRot.x,
-	//	&vZero);
-
-	//// 回転軸に設置
-	//Cube::SetPos((m_vPos + vZero) * 100.0f);
-	//m_vPos += vZero;
-
-	//D3DXMATRIX mtxScl, mtxRot, mtxTranslate;
-
-	/******************** ワールド変換 ********************/
-	// ワールドマトリクスの初期化
-
-
-
-	// 【R】回転を反映(YawPitchRollはy,x,z)
-
-
-	//D3DXMatrixRotationZ(&mtxRot, m_vRotIner.z);
-	//D3DXMatrixMultiply(&m_mtxWorld, &m_mtxWorld, &mtxRot);
-
-	//D3DXVECTOR3 vAxisTemp = D3DXVECTOR3(
-	//	m_mtxWorld._41,
-	//	m_mtxWorld._42,
-	//	m_mtxWorld._43
-	//);
-
-	//D3DXMatrixRotationAxis(&m_mtxWorld, &vAxisTemp, m_vRotIner.z);
-	//D3DXMatrixMultiply(&m_mtxWorld, &m_mtxWorld, &mtxRot);
-
-	//D3DXMatrixIdentity(&mtxRot);
-
-	//D3DXMatrixRotationX(&mtxRotX, m_vRotIner.x);
-	//D3DXMatrixMultiply(&mtxRot, &mtxRot, &mtxRotX);
-
-	//D3DXMatrixRotationY(&mtxRotY, m_vRotIner.y);
-	//D3DXMatrixMultiply(&mtxRot, &mtxRot, &mtxRotY);
-
-	//D3DXMatrixRotationZ(&mtxRotZ, m_vRotIner.z);
-	//D3DXMatrixMultiply(&mtxRot, &mtxRot, &mtxRotZ);
-
-	// 【T】平行移動を反映(オブジェクトを配置している）
-	//D3DXMatrixTranslation(&mtxTranslate, 0.0f, 0.0f, -2.0f);
-	//D3DXMatrixMultiply(&m_mtxWorld, &m_mtxWorld, &mtxTranslate);
-
-	//D3DXMatrixRotationX(&mtxRot, m_vRotIner.x);
-	//D3DXMatrixMultiply(&m_mtxWorld, &m_mtxWorld, &mtxRot);
-
-	//D3DXVECTOR3 xAxis = D3DXVECTOR3(
-	//	m_mtxWorld._31, m_mtxWorld._32, m_mtxWorld._33);
-
-	////D3DXMatrixIdentity(&mtxRot);
-	//D3DXMatrixRotationAxis(&mtxRot, &xAxis, m_vRotIner.z);
-	//D3DXMatrixMultiply(&m_mtxWorld, &m_mtxWorld, &mtxRot);
-
-	//D3DXMatrixRotationYawPitchRoll(&mtxRot, 0.0f, 0.0f, 0.0f);
-	//D3DXMatrixMultiply(&m_mtxWorld, &m_mtxWorld, &mtxRot);
-
-	//D3DXMatrixRotationZ(&mtxRot, m_vRotIner.z);
-	//D3DXMatrixMultiply(&m_mtxWorld, &m_mtxWorld, &mtxRot);
-
-	//D3DXMatrixRotationY(&mtxRot, m_vRotIner.y);
-	//D3DXMatrixMultiply(&m_mtxWorld, &m_mtxWorld, &mtxRot);
-
-	//D3DXMatrixRotationZ(&mtxRot, vRot.z);
-	//D3DXMatrixMultiply(&m_mtxWorld, &m_mtxWorld, &mtxRot);
-
-
-	//m_vAxis
-
-	//D3DXVECTOR3 xAxis = D3DXVECTOR3(
-	//	m_mtxWorld._11, m_mtxWorld._12, m_mtxWorld._13);
-
-	//////D3DXMatrixIdentity(&mtxRot);
-	////D3DXMatrixIdentity(&mtxRot);
-
-
-
-
-	//D3DXMatrixRotationAxis(&mtxRot, &m_vAxisZ, vRot.z);
-	//D3DXMatrixMultiply(&m_mtxWorld, &m_mtxWorld, &mtxRot);
-
-	//m_vAxisX = D3DXVECTOR3(
-	//	mtxRot._11, mtxRot._12, mtxRot._13);
-
-
-#ifdef _DEBUG
-	PrintDebugProc("mtxX[%f,%f,%f]\n",
-		m_mtxWorld._11, m_mtxWorld._12, m_mtxWorld._13);
-	PrintDebugProc("mtxY[%f,%f,%f]\n",
-		m_mtxWorld._21, m_mtxWorld._22, m_mtxWorld._23);
-	PrintDebugProc("mtxZ[%f,%f,%f]\n",
-		m_mtxWorld._31, m_mtxWorld._32, m_mtxWorld._33);
-#endif
-
-
-	//D3DXMatrixRotationAxis(&mtxRot, &m_vAxisX, vRot.x);
-	//D3DXMatrixMultiply(&m_mtxWorld, &m_mtxWorld, &mtxRot);
-
-	//m_vAxisZ = D3DXVECTOR3(
-	//	mtxRot._31, mtxRot._32, mtxRot._33);
-
-
-
-#ifdef _DEBUG
-	PrintDebugProc("mtxX[%f,%f,%f]\n",
-		m_mtxWorld._11, m_mtxWorld._12, m_mtxWorld._13);
-	PrintDebugProc("mtxY[%f,%f,%f]\n",
-		m_mtxWorld._21, m_mtxWorld._22, m_mtxWorld._23);
-	PrintDebugProc("mtxZ[%f,%f,%f]\n",
-		m_mtxWorld._31, m_mtxWorld._32, m_mtxWorld._33);
-	PrintDebugProc("AxisX[%f,%f,%f]\n",
-		m_vAxisX.x, m_vAxisX.y, m_vAxisX.z);
-	PrintDebugProc("AxisZ[%f,%f,%f]\n",
-		m_vAxisZ.x, m_vAxisZ.y, m_vAxisZ.z);
-
-#endif
-
-
-
-
-	//D3DXMatrixMultiply(&mtxRotX, &mtxRotX, &mtxRotZ);
-	//D3DXMatrixMultiply(&m_mtxWorld, &m_mtxWorld, &mtxRotX);
-
-
-
-
-	//m_mtxWorld = mtxRotX * mtxRotY * mtxRotZ * mtxTranslate;
-
-	//m_mtxWorld = mtxRotZ * mtxTranslate;
-
-	//D3DXMatrixRotationY(&mtxRotY, m_vRotIner.y);
-	//D3DXMatrixMultiply(&m_mtxWorld, &m_mtxWorld, &mtxRotY);
-
-
-
-
-	//D3DXMatrixMultiply(&mtxRot, &mtxRotX, &mtxRotY);
-	//D3DXMatrixMultiply(&mtxRot, &mtxRot, &mtxRotZ);
-
-	//D3DXMatrixMultiply(&mtxRot, &mtxRotY, &mtxRotZ);
-	//D3DXMatrixMultiply(&mtxRot, &mtxRot, &mtxRotX);
-
-
-	//D3DXMatrixMultiply(&m_mtxWorld, &m_mtxWorld, &mtxRot);
-
-	//D3DXMatrixRotationX(&mtxRot2, m_vRotIner.x);
-	//D3DXMatrixMultiply(&m_mtxWorld, &m_mtxWorld, &mtxRot2);
-
-
-
-
-
-	////D3DXMatrixRotationZ(&mtxRot, r	ot.z);
-	//D3DXMatrixMultiply(world, world, &mtxRot);
-
-	//D3DXMatrixMultiply(&m_mtxWorld, &m_mtxWorld, &mtxRot);
-
-	//D3DXMatrixRotationYawPitchRoll(&mtxRot, 0.0f, m_vRotIner.x, 0.0f);
-	//D3DXMatrixMultiply(&m_mtxWorld, &m_mtxWorld, &mtxRot);
-
-	//D3DXMatrixRotationYawPitchRoll(&mtxRot, 0.0f, 0.0f, m_vRotIner.z);
-	//D3DXMatrixMultiply(&m_mtxWorld, &m_mtxWorld, &mtxRot);
-
-
-
-
-
-
-
-	//D3DXVECTOR3 vTempMove;
-	//vTempMove = m_vAxisZ;
-
-	//Cube::SetPos(m_vPos + 
-	//	-vTempMove * 50.0f);
-
-#ifdef _DEBUG
-	PrintDebugProc("mtx [%f,%f,%f]\n", m_mtxWorld._41, m_mtxWorld._42, m_mtxWorld._43);
-#endif
-
-	//D3DXVECTOR3 vPos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-	//D3DXVECTOR3 vScl = D3DXVECTOR3(1.0f, 1.0f, 1.0f);
-
-	//WorldConvertPR(&m_mtxWorld, vPos, m_vRot, vScl);
-
-
-
-	/******************** ワールド変換 ********************/
-	D3DXQUATERNION AnsTemp2 = qAnswer;
-
-
-	// 【S】スケールを反映(Multiplyは行列計算)
-	D3DXMatrixScaling(&mtxScl, m_vScl.x, m_vScl.y, m_vScl.z);
-	D3DXMatrixMultiply(&m_mtxWorld, &m_mtxWorld, &mtxScl);
-
-	// 【R】回転を反映(YawPitchRollはy,x,z)
-
-	//mtxRot._11 = 1.0f - 2.0f * qAnswer.y * qAnswer.y - 2.0f * qAnswer.z * qAnswer.z;
-	//mtxRot._12 = 2.0f * qAnswer.x * qAnswer.y + 2.0f * qAnswer.w * qAnswer.z;
-	//mtxRot._13 = 2.0f * qAnswer.x * qAnswer.z - 2.0f * qAnswer.w * qAnswer.y;
-	//mtxRot._14 = 0.0f;
-
-	//mtxRot._21 = 2.0f * qAnswer.x * qAnswer.y - 2.0f * qAnswer.w * qAnswer.z;
-	//mtxRot._22 = 1.0f - 2.0f * qAnswer.x * qAnswer.x - 2.0f * qAnswer.z * qAnswer.z;
-	//mtxRot._23 = 2.0f * qAnswer.y * qAnswer.z + 2.0f * qAnswer.w * qAnswer.x;
-	//mtxRot._24 = 0.0f;
-
-	//mtxRot._31 = 2.0f * qAnswer.x * qAnswer.z + 2.0f * qAnswer.w * qAnswer.y;
-	//mtxRot._32 = 2.0f * qAnswer.y * qAnswer.z - 2.0f * qAnswer.w * qAnswer.x;
-	//mtxRot._33 = 1.0f - 2.0f * qAnswer.x * qAnswer.x - 2.0f * qAnswer.y * qAnswer.y;
-	//mtxRot._34 = 0.0f;
-
-	//mtxRot._41 = 0.0f;
-	//mtxRot._42 = 0.0f;
-	//mtxRot._43 = 0.0f;
-	//mtxRot._44 = 1.0f;
-
-	//D3DXMatrixMultiply(&m_mtxWorld, &m_mtxWorld, &mtxRot);
-
-	//qAnswer = AnsTemp;
-
-	//mtxRot._11 = 1.0f - 2.0f * qAnswer.y * qAnswer.y - 2.0f * qAnswer.z * qAnswer.z;
-	//mtxRot._12 = 2.0f * qAnswer.x * qAnswer.y + 2.0f * qAnswer.w * qAnswer.z;
-	//mtxRot._13 = 2.0f * qAnswer.x * qAnswer.z - 2.0f * qAnswer.w * qAnswer.y;
-	//mtxRot._14 = 0.0f;
-
-	//mtxRot._21 = 2.0f * qAnswer.x * qAnswer.y - 2.0f * qAnswer.w * qAnswer.z;
-	//mtxRot._22 = 1.0f - 2.0f * qAnswer.x * qAnswer.x - 2.0f * qAnswer.z * qAnswer.z;
-	//mtxRot._23 = 2.0f * qAnswer.y * qAnswer.z + 2.0f * qAnswer.w * qAnswer.x;
-	//mtxRot._24 = 0.0f;
-
-	//mtxRot._31 = 2.0f * qAnswer.x * qAnswer.z + 2.0f * qAnswer.w * qAnswer.y;
-	//mtxRot._32 = 2.0f * qAnswer.y * qAnswer.z - 2.0f * qAnswer.w * qAnswer.x;
-	//mtxRot._33 = 1.0f - 2.0f * qAnswer.x * qAnswer.x - 2.0f * qAnswer.y * qAnswer.y;
-	//mtxRot._34 = 0.0f;
-
-	//mtxRot._41 = 0.0f;
-	//mtxRot._42 = 0.0f;
-	//mtxRot._43 = 0.0f;
-	//mtxRot._44 = 1.0f;
-
-	//D3DXMatrixRotationQuaternion(&mtxRot, &qAnswer);
-	//D3DXMatrixMultiply(&m_mtxWorld, &m_mtxWorld, &mtxRot);
-
-	//D3DXMatrixRotationQuaternion(&mtxRot, &AnsTemp);
-	//D3DXMatrixMultiply(&m_mtxWorld, &m_mtxWorld, &mtxRot);
-
-
-
-	//// 【T】平行移動を反映(オブジェクトを配置している）
-	//D3DXMatrixTranslation(&mtxTranslate, m_vPos.x, m_vPos.y, m_vPos.z);
-	//D3DXMatrixMultiply(&m_mtxWorld, &m_mtxWorld, &mtxTranslate);
-
-
-	//D3DXVECTOR3 vLook = m_vPos +
-	//	D3DXVECTOR3(m_mtxWorld._41, m_mtxWorld._42, m_mtxWorld._43) * 50.0f;
-
-	D3DXVECTOR3 X, Y, Z, Up;
-	//Up = D3DXVECTOR3(qAnswer2.x, qAnswer2.y, qAnswer2.z);
-	//Up = D3DXVECTOR3(0.0f, 1.0f, 0.0f);
-
-	CrossProduct(&Up, &m_vAxisX, &m_vAxisZ);
-
-	//Up = m_vAxisX;
-	//Z = vLook - m_vPos;
-	Z = m_vAxisZ;
-	D3DXVec3Normalize(&Z, &Z);
-	D3DXVec3Normalize(&Up, &Up);
-	D3DXVec3Cross(&X, D3DXVec3Normalize(&Y, &Up), &Z);
-	D3DXVec3Normalize(&X, &X);
-	D3DXVec3Normalize(&Y, D3DXVec3Cross(&Y, &Z, &X));
-
-	mtxRot._11 = X.x;
-	mtxRot._12 = X.y;
-	mtxRot._13 = X.z;
-	mtxRot._14 = 0.0f;
-
-	mtxRot._21 = Y.x;
-	mtxRot._22 = Y.y;
-	mtxRot._23 = Y.z;
-	mtxRot._24 = 0.0f;
-
-	mtxRot._31 = -Z.x;
-	mtxRot._32 = -Z.y;
-	mtxRot._33 = -Z.z;
-	mtxRot._34 = 0.0f;
-
-	mtxRot._41 =
-		mtxRot._42 =
-		mtxRot._43 = 0.0f;
-	mtxRot._44 = 1.0f;
-
-
-	//D3DXMatrixRotationQuaternion(&mtxRot, &qAnswer);
-	D3DXMatrixMultiply(&m_mtxWorld, &m_mtxWorld, &mtxRot);
-
-	//D3DXMatrixRotationAxis(&mtxRot, &m_vAxisX, vRot.x);
-	//D3DXMatrixMultiply(&m_mtxWorld, &m_mtxWorld, &mtxRot);
-
-
-	//D3DXMatrixRotationAxis(&mtxRot, &m_vAxisZ, vRot.z);
-	//D3DXMatrixMultiply(&m_mtxWorld, &m_mtxWorld, &mtxRot);
-
-
-
-	// 【T】平行移動を反映(オブジェクトを配置している）
-	D3DXMatrixTranslation(&mtxTranslate, m_vPos.x, m_vPos.y, m_vPos.z);
-	D3DXMatrixMultiply(&m_mtxWorld, &m_mtxWorld, &mtxTranslate);
-
-
-	D3DXVECTOR3 vTempMove;
-	vTempMove = D3DXVECTOR3(
-		m_mtxWorld._31,
-		m_mtxWorld._32,
-		m_mtxWorld._33);
-
-	//vTempMove = m_vAxisZ;
-
-	m_vPos -= vTempMove *10;
-
-
-
-	//Cube::SetPos(m_vPos + vTempMove * 50.0f);
-
-
-	//m_vRot.x = m_vRotIner.x;
-	//m_vRot.z = m_vRotIner.z;
-//
-//
-//	m_vRot.x = -atan2(m_mtxWorld._42,m_mtxWorld._43);
-//
-//	//m_vRot.y = atan2(m_mtxWorld._41, m_mtxWorld._43);
-//
-//	m_vRot.z = -atan2(m_mtxWorld._41, m_mtxWorld._42);
-
-	 //カメラをモデルにセット
-	//vTemp.y += PLAYER_HEIGHT;
-	SetCameraAt(m_vPos + (Up * 30));
-
-	SetCameraUp(Up);
-
-	//SetCameraEye(vTemp);
-	SetCameraEye(m_vPos + (Up * 50) - (m_vAxisZ * 100));
+	m_vMove = m_vZ * m_fMoveSpeed;
+
+	//// 移動を適用
+	//m_vPos += m_vMove;
+
+
+	// カメラをAtをモデルに設定
+	Camera::SetAt(m_vPos + (m_vY * 30));
+
+	// カメラEyeをモデル後方にセット
+	Camera::SetEye(m_vPos + (m_vY * 30) - vEye);
+
+	// カメラ慣性を減らす
+	Camera::AddEyeIner(0.001f);
+
+	// カメラUpをモデル上部に設定
+	Camera::SetUp(m_vY);
+
+}
+
+//=============================================================================
+// 飛行処理
+//=============================================================================
+void Player::Fly(void)
+{
+	// ピッチ
+	if (InputPress(INPUT_UP_R) && InputPress(INPUT_DOWN_R))
+	{	// 同時押しは慣性を止める
+		if (m_vRot.x > 0.0f)
+			m_vRot.x = max(m_vRot.x - PLAYER_ROT_SPEED_X, 0.0f);
+		else if (m_vRot.x < 0.0f)
+			m_vRot.x = min(m_vRot.x + PLAYER_ROT_SPEED_X, 0.0f);
+	}
+	else if (InputPress(INPUT_UP_R))
+	{	// ピッチ角度を慣性で加算
+		m_vRot.x = min(m_vRot.x + PLAYER_ROT_SPEED_X, PLAYER_ROT_SPEED_MAX_X);
+	}
+	else if (InputPress(INPUT_DOWN_R))
+	{	// ピッチ角度を慣性で減算
+		m_vRot.x = max(m_vRot.x - PLAYER_ROT_SPEED_X, -PLAYER_ROT_SPEED_MAX_X);
+	}
+	else
+	{	// 入力なしは慣性を止める
+		if (m_vRot.x > 0.0f)
+			m_vRot.x = max(m_vRot.x - PLAYER_ROT_SPEED_X, 0.0f);
+		else if (m_vRot.x < 0.0f)
+			m_vRot.x = min(m_vRot.x + PLAYER_ROT_SPEED_X, 0.0f);
+	}
+
+	// ロール
+	if (InputPress(INPUT_LEFT_R) && InputPress(INPUT_RIGHT_R))
+	{	// 同時押しは慣性を止める
+		if (m_vRot.z > 0.0f)
+			m_vRot.z = max(m_vRot.z - PLAYER_ROT_SPEED_Z, 0.0f);
+		else if (m_vRot.z < 0.0f)
+			m_vRot.z = min(m_vRot.z + PLAYER_ROT_SPEED_Z, 0.0f);
+	}
+	else if (InputPress(INPUT_RIGHT_R))
+	{	// ロール角度を慣性で加算
+		m_vRot.z = min(m_vRot.z + PLAYER_ROT_SPEED_Z, PLAYER_ROT_SPEED_MAX_Z);
+	}
+	else if (InputPress(INPUT_LEFT_R))
+	{	// ロール角度を慣性で減算
+		m_vRot.z = max(m_vRot.z - PLAYER_ROT_SPEED_Z, -PLAYER_ROT_SPEED_MAX_Z);
+	}
+	else
+	{	// 入力なしは慣性を止める
+		if (m_vRot.z > 0.0f)
+			m_vRot.z = max(m_vRot.z - PLAYER_ROT_SPEED_Z, 0.0f);
+		else if (m_vRot.z < 0.0f)
+			m_vRot.z = min(m_vRot.z + PLAYER_ROT_SPEED_Z, 0.0f);
+	}
+
+	// ロール回転を計算し、ピッチ回転用の軸を求める
+	QuaternionCalculate(&m_vX, &m_vZ, m_vRot.z, &m_vX);
+
+	// ピッチ回転を計算し、ロール回転用の軸を求める
+	QuaternionCalculate(&m_vZ, &m_vX, m_vRot.x, &m_vZ);
+
+	// ローカルY軸のベクトルを外積で求める
+	CrossProduct(&m_vY, &m_vZ, &m_vX);
+
+	// 移動量を算出
+	m_vMove = m_vZ * m_fMoveSpeed;
+
+	// 移動量を適用
+	m_vPos -= m_vMove;
+
+	// カメラをAtをモデルに設定
+	Camera::SetAt(m_vPos + (m_vY * 30));
+
+	// カメラUpをモデル上部に設定
+	Camera::SetUp(m_vY);
+
+	// カメラEyeをモデル後方にセット
+	Camera::SetEye(m_vPos + m_vZ * 100);
+	//SetCameraEye(m_vPos - m_vZ * 100 + m_vY * 50);
+}
+
+//=============================================================================
+// 移動処理
+//=============================================================================
+void Player::Move(void)
+{
+	if (InputPress(INPUT_UP) && InputPress(INPUT_DOWN))
+	{
+		//if (m_fMoveSpeed > 0.0f)
+		//	m_fMoveSpeed = max(m_fMoveSpeed - PLAYER_MOVE_SPEED, 0.0f);
+		//else if (m_fMoveSpeed < 0.0f)
+		//	m_fMoveSpeed = min(m_fMoveSpeed + PLAYER_MOVE_SPEED, 0.0f);
+	}
+	else if (InputPress(INPUT_UP))
+	{
+		m_fMoveSpeed = min(m_fMoveSpeed + PLAYER_MOVE_SPEED, PLAYER_MOVE_SPEED_MAX);
+	}
+	else if (InputPress(INPUT_DOWN))
+	{
+		m_fMoveSpeed = max(m_fMoveSpeed - PLAYER_MOVE_SPEED, PLAYER_MOVE_SPEED_MIN);
+	}
+	else
+	{
+		//if (m_fMoveSpeed > 0.0f)
+		//	m_fMoveSpeed = max(m_fMoveSpeed - PLAYER_MOVE_SPEED, 0.0f);
+		//else if (m_fMoveSpeed < 0.0f)
+		//	m_fMoveSpeed = min(m_fMoveSpeed + PLAYER_MOVE_SPEED, 0.0f);
+	}
+}
+
+//=============================================================================
+// モードチェンジ処理
+//=============================================================================
+void Player::ModeChange(void)
+{
+	if (GetKeyboardTrigger(DIK_1))
+	{
+		m_eMode = MODE_FLOAT;
+	}
+	if (GetKeyboardTrigger(DIK_2))
+	{
+		m_eMode = MODE_FLY;
+	}
+	if (GetKeyboardTrigger(DIK_3))
+	{
+		m_eMode = MODE_LOCKON;
+	}
+	if (m_eMode != m_eModeOld)
+	{
+		switch (m_eMode)
+		{
+		case MODE_FLOAT:
+			Camera::SetEyeIner(0.01f);
+			break;
+		case MODE_FLY:
+			Camera::SetEyeIner(0.05f);
+			break;
+		case MODE_LOCKON:
+			break;
+		}
+		m_vRot = ZERO_D3DXVECTOR3;
+		m_eModeOld = m_eMode;
+	}
 }
 
 //=============================================================================
@@ -762,8 +439,8 @@ void Player::Move(void)
 //=============================================================================
 void Player::MoveFunc(float fAngle)
 {
-	m_vPos.x += sinf(fAngle) * PLAYER_MOVE_SPEED;
-	m_vPos.z += cosf(fAngle) * PLAYER_MOVE_SPEED;
+	m_vPos.x += cosf(fAngle) * m_fMoveSpeed;
+	m_vPos.z += sinf(fAngle) * m_fMoveSpeed;
 }
 
 //=============================================================================

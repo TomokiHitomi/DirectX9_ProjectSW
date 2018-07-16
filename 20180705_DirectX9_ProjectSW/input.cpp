@@ -893,6 +893,18 @@ bool InputPress(INPUT_CHECK eInput)
 		dwButton |= BUTTON_RIGHT;
 		dwXButton |= XBOTTON_DPAD_RIGHT;
 		break;
+	case INPUT_UP_R:
+		nKey = DIK_UP;
+		break;
+	case INPUT_DOWN_R:
+		nKey = DIK_DOWN;
+		break;
+	case INPUT_LEFT_R:
+		nKey = DIK_LEFT;
+		break;
+	case INPUT_RIGHT_R:
+		nKey = DIK_RIGHT;
+		break;
 	}
 	
 	if ((g_keyState[nKey] & 0x80) ? true : false
