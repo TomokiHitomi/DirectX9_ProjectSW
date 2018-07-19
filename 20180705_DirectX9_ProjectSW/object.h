@@ -56,30 +56,31 @@ public:
 	};
 private:
 
-	static int		nObjectCount;				// 全オブジェクト数のカウンタ
-	static Object	*s_pRoot[ObjectRootMax];	// リストの更新ルートポインタ
-	Object			*m_pPrev[ObjectRootMax];	// リストの前ポインタ
-	Object			*m_pNext[ObjectRootMax];	// リストの次ポインタ
-	Priority		m_ePriority[ObjectRootMax];	// 優先順位（サブ）
-	ObjectID		eObjectId;					// オブジェクト識別用ID
+	static int		nObjectCount;					// 全オブジェクト数のカウンタ
+	static Object	*s_pRoot[ObjectRootMax];		// リストの更新ルートポインタ
+	Object			*m_pPrev[ObjectRootMax];		// リストの前ポインタ
+	Object			*m_pNext[ObjectRootMax];		// リストの次ポインタ
+	Priority		m_ePriority[ObjectRootMax];		// 優先順位（サブ）
+	ObjectID		eObjectId;						// オブジェクト識別用ID
 public:
-
-	// 更新処理
-	virtual void Update(void) {}
-	// 描画処理
-	virtual void Draw(void) {}
-	// 解放処理
-	void Release(void);
-
 	// コンストラクタ（初期化処理）
 	Object();
 	// デストラクタ（終了処理）
 	virtual ~Object();
 
+	// 更新処理
+	virtual void Update(void) { ; }
+	// 描画処理
+	virtual void Draw(void) { ; }
+	// 解放処理
+	void Release(void);
+
 	// オブジェクトIDとプライオリティの設定処理
 	void SetIdAndPriority(ObjectID, Priority, Priority);
-	// オブジェクトをリスト追加処理
-	void AppendList(void);
+	// オブジェクトのリスト追加処理
+	void InsertList(void);
+	// オブジェクトのリスト離脱処理
+	void RemoveList(void);
 
 	// 全オブジェクトの更新処理
 	static void UpdateAll(void);
@@ -95,6 +96,9 @@ public:
 
 	// ネクストポインタの取得処理
 	Object *GetObjectNext(ObjectRoot eObjRoot);
+
+	// オブジェクトのポインタ取得処理
+	static Object *GetObjectPointer(ObjectID eObjId);
 
 	// オブジェクトID設定処理
 	void SetObjectId(ObjectID eObjId) { eObjectId = eObjId; }

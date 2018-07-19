@@ -14,6 +14,7 @@
 /* ゲームで必要なインクルード */
 #include "fade.h"
 #include "copyright.h"
+#include "skydome.h"
 
 /* デバッグ */
 #ifdef _DEBUG
@@ -54,6 +55,7 @@ void GameScene::Draw(void)
 //=============================================================================
 GameScene::GameScene(void)
 {
+	new Skydome;
 	new Copyright;
 	m_nStopCount = 0;
 	m_bGameStart = false;

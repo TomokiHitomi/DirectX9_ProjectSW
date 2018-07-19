@@ -18,10 +18,10 @@
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
-Object	*Object::s_pRoot[ObjectRootMax] = { NULL, NULL };
+Object		*Object::s_pRoot[ObjectRootMax] = { NULL, NULL };
 //Object	*Object::s_pRootUpdate = NULL;
 //Object	*Object::s_pRootDraw = NULL;
-int		Object::nObjectCount = 0;
+int			Object::nObjectCount = 0;
 
 //*****************************************************************************
 // プロトタイプ宣言
@@ -45,38 +45,21 @@ int		Object::nObjectCount = 0;
 //=============================================================================
 void Object::Release(void)
 {
-	// ルート格納用ポインタ
-	Object	**pRoot = NULL;
+	// オブジェクトのリスト離脱処理
+	RemoveList();
 
-	// リスト構造の再結合処理
-	for (unsigned int i = 0; i < ObjectRootMax; i++)
+	// 自身の解放
+	delete this;
+
+	// オブジェクト数が0の場合
+	if (nObjectCount == 0)
 	{
-		// ルートポインタを取得
-		pRoot = GetObjectRootAdr(ObjectRoot(i));
-
-		// 前ポインタがNULLではない
-		if ((this->m_pPrev[i]) != NULL)
+		for (unsigned int i = 0; i < ObjectRootMax; i++)
 		{
-			// 前ポインタが指す次ポインタを
-			// 自らが格納している次ポインタに差し替える
-			(this->m_pPrev[i])->m_pNext[i] = this->m_pNext[i];
-		}
-		// 前ポインタがNULL
-		else
-		{	// ルートポインタをNULL
-			*pRoot = NULL;
-		}
-
-		// 次ポインタがNULLではない
-		if (this->m_pNext[i] != NULL)
-		{
-			// 次ポインタが指す前ポインタを
-			// 自らが格納している前ポインタに差し替える
-			this->m_pNext[i]->m_pPrev[i] = this->m_pPrev[i];
+			// ルートポインタをNULL
+			s_pRoot[i] = NULL;
 		}
 	}
-
-	delete this;
 }
 
 //=============================================================================
@@ -90,13 +73,10 @@ Object::Object(void)
 	// プロパティの初期化
 	for (unsigned int i = 0; i < ObjectRootMax; i++)
 	{
-		this->m_pPrev[i] = NULL;			// 前ポインタの初期化
-		this->m_pNext[i] = NULL;			// 後ポインタの初期化
-		this->m_ePriority[i] = Middle;
+		m_pPrev[i] = NULL;			// 前ポインタの初期化
+		m_pNext[i] = NULL;			// 後ポインタの初期化
+		m_ePriority[i] = Middle;	// 優先順位を Middle で初期化
 	}
-
-	//this->eUpdatePriority = Normal;	// メインプライオリティをNormalで初期化
-	//this->eDrawPriority = Normal;	// サブプライオリティをNormalで初期化
 }
 
 
@@ -118,18 +98,18 @@ void Object::SetIdAndPriority(ObjectID eObjId, Priority eUpdateP, Priority eDraw
 	//// プライオリティテスト用
 	//eObjId = ObjectID(nObjectCount);
 
-	this->SetObjectId(eObjId);							// オブジェクトIDを設定
-	this->SetPriority(UpdateRoot, eUpdateP);	// 更新プライオリティを設定
-	this->SetPriority(DrawRoot, eDrawP);		// 描画プライオリティを設定
+	SetObjectId(eObjId);				// オブジェクトIDを設定
+	SetPriority(UpdateRoot, eUpdateP);	// 更新プライオリティを設定
+	SetPriority(DrawRoot, eDrawP);		// 描画プライオリティを設定
 
 	// オブジェクトをリスト追加処理
-	AppendList();
+	InsertList();
 }
 
 //=============================================================================
-// オブジェクトをリスト追加処理
+// オブジェクトのリスト追加処理
 //=============================================================================
-void Object::AppendList(void)
+void Object::InsertList(void)
 {
 	Object **pList = NULL;
 	Object **pPrevTemp = NULL;
@@ -146,7 +126,7 @@ void Object::AppendList(void)
 			if (*pList != NULL)
 			{
 				// プライオリティが高い
-				if ((*pList)->m_ePriority[i] > this->m_ePriority[i])
+				if ((*pList)->m_ePriority[i] > m_ePriority[i])
 				{
 					// 割り込み処理
 					// pListの前ポインタに自らを格納
@@ -155,9 +135,9 @@ void Object::AppendList(void)
 					if (*pList != s_pRoot[i])
 					{
 						// 前ポインタにpPrevTempを設定
-						this->m_pPrev[i] = *pPrevTemp;
+						m_pPrev[i] = *pPrevTemp;
 					}
-					this->m_pNext[i] = *pList;
+					m_pNext[i] = *pList;
 					// pListに自らを格納
 					*pList = this;
 					break;
@@ -176,7 +156,7 @@ void Object::AppendList(void)
 				if (*pList != s_pRoot[i])
 				{
 					// 前ポインタにpPrevTempを設定
-					this->m_pPrev[i] = *pPrevTemp;
+					m_pPrev[i] = *pPrevTemp;
 				}
 
 				// pListの指すRootまたはNextに自らを格納
@@ -188,30 +168,91 @@ void Object::AppendList(void)
 }
 
 //=============================================================================
+// オブジェクトのリスト離脱処理
+//=============================================================================
+void Object::RemoveList(void)
+{
+	// ルート格納用ポインタ
+	Object	**pRoot = NULL;
+
+	// リスト構造の再結合処理
+	for (unsigned int i = 0; i < ObjectRootMax; i++)
+	{
+		// ルートポインタを取得
+		pRoot = GetObjectRootAdr(ObjectRoot(i));
+
+		// 前ポインタがNULLではない
+		if ((m_pPrev[i]) != NULL)
+		{
+			// 前ポインタが指す次ポインタを
+			// 自らが格納している次ポインタに差し替える
+			(m_pPrev[i])->m_pNext[i] = m_pNext[i];
+		}
+		// 前ポインタがNULL
+		else
+		{
+			// ルートポインタを次ポインタに差し替える
+			*pRoot = m_pNext[i];
+		}
+
+		// 次ポインタがNULLではない
+		if (m_pNext[i] != NULL)
+		{
+			// 次ポインタが指す前ポインタを
+			// 自らが格納している前ポインタに差し替える
+			m_pNext[i]->m_pPrev[i] = m_pPrev[i];
+		}
+	}
+}
+
+//=============================================================================
+// オブジェクトのポインタ取得処理
+//=============================================================================
+Object *Object::GetObjectPointer(ObjectID eObjId)
+{
+	Object *pList = Object::GetObjectRoot(UpdateRoot);
+
+	while (pList != NULL)
+	{
+		if (eObjId == pList->GetObjectId())
+		{
+			return pList;
+		}
+		pList = pList->GetObjectNext(UpdateRoot);
+	}
+	return NULL;
+}
+
+//=============================================================================
 // 全オブジェクトの更新処理
 //=============================================================================
 void Object::UpdateAll(void)
 {
-	Object *pList = Object::GetObjectRoot(UpdateRoot);
 
 #ifdef _DEBUG
-	PrintDebugProc("【 ObjectCount : %d 】\n", nObjectCount);
+	PrintDebugProc("【 Object 】\n");
+	PrintDebugProc("ObjectCount [%d]\n", nObjectCount);
+	PrintDebugProc("\n");
+
+	Object *pList = Object::GetObjectRoot(UpdateRoot);
+
+	while (pList != NULL)
+	{
+		PrintDebugProc("Update[ ID : %d  Pri : %d] \n",
+			pList->GetObjectId(), pList->GetPriority(UpdateRoot));
+		pList = pList->GetObjectNext(UpdateRoot);
+	}
+	PrintDebugProc("\n");
 #endif
+
+
+	pList = Object::GetObjectRoot(UpdateRoot);
 
 	while (pList != NULL)
 	{
 		pList->Update();
-
-#ifdef _DEBUG
-		PrintDebugProc("Update[ ID : %d  Pri : %d] \n",
-			pList->GetObjectId(), pList->GetPriority(UpdateRoot));
-#endif
-
 		pList = pList->GetObjectNext(UpdateRoot);
 	}
-#ifdef _DEBUG
-	PrintDebugProc("\n");
-#endif
 }
 
 //=============================================================================

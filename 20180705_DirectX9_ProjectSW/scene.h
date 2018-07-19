@@ -38,7 +38,7 @@ class SceneManager
 {
 public:
 	// シーンリスト
-	enum SCENE 	{TITLE, GAME, RESULT};
+	enum SCENE 	{TITLE, GAME, RESULT, MAX	};
 	// コンストラクタ
 	SceneManager(void);
 	// デストラクタ

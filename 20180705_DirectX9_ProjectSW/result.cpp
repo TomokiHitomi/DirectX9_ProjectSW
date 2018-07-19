@@ -13,6 +13,7 @@
 
 /* リザルトで必要なインクルード */
 #include "air_water_frame.h"
+#include "skydome.h"
 
 /* Debug */
 #ifdef _DEBUG
@@ -53,6 +54,7 @@ void ResultScene::Draw(void)
 //=============================================================================
 ResultScene::ResultScene(void)
 {
+	new Skydome;
 	new AirWaterFream;
 }
 

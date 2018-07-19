@@ -45,6 +45,32 @@
 void TitleScene::Update(void)
 {
 	Object::UpdateAll();
+#ifdef _DEBUG
+	if (GetKeyboardTrigger(DIK_5))
+	{
+		new Copyright;
+	}
+	if (GetKeyboardTrigger(DIK_6))
+	{
+		Object *pTemp = Object::GetObjectPointer(Object::COPYRIGHT);
+		if (pTemp != NULL)
+		{
+			pTemp->Release();
+		}
+	}
+	if (GetKeyboardTrigger(DIK_7))
+	{
+		new AirWaterFream;
+	}
+	if (GetKeyboardTrigger(DIK_8))
+	{
+		Object *pTemp = Object::GetObjectPointer(Object::FRAME);
+		if (pTemp != NULL)
+		{
+			pTemp->Release();
+		}
+	}
+#endif
 }
 
 //=============================================================================
@@ -65,6 +91,10 @@ TitleScene::TitleScene(void)
 	new Player;
 	new Skydome;
 	new Cube;
+
+	// 指定オブジェクト取得テスト
+	Object *pTest1 = Object::GetObjectPointer(Object::PLAYER);
+	Object *pTest2 = Object::GetObjectPointer(Object::COPYRIGHT);
 }
 
 //=============================================================================
