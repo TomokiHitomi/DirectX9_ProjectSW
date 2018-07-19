@@ -39,9 +39,13 @@
 #define PLAYER_ALPHA_TEST			(150)
 
 /***** FloatMode *****/
-#define PLAYER_FLOAT_ROT_X			(2.90f)
+#define PLAYER_FLOAT_ROT_X			(D3DX_PI * 0.5f)
+#define PLAYER_FLOAT_ROT_Y			(D3DX_PI)
 
 /***** FlyMode *****/
+
+/***** ChangeMode *****/
+#define PLAYER_CHANGE_FRAME			(10)
 
 //*****************************************************************************
 // 構造体定義
@@ -59,6 +63,7 @@ private:
 		MODE_FLOAT,
 		MODE_FLY,
 		MODE_LOCKON,
+		MODE_CHANGE,
 		MODE_MAX
 	};
 	CSkinMesh		*m_CSkinMesh;		// スキンメッシュ格納用
@@ -66,7 +71,9 @@ private:
 	D3DXVECTOR3		m_vRot;				// 回転情報
 	D3DXVECTOR3		m_vScl;				// 拡縮情報
 	D3DXVECTOR3		m_vMove;			// 移動量情報
-	D3DXVECTOR3		m_vRotIner;				// 回転情報
+	D3DXVECTOR3		m_vRotIner;			// 回転情報
+	D3DXVECTOR3		m_vRotChange;		// 回転情報
+	D3DXVECTOR3		m_vUp;
 
 	// ローカルベクトル
 	D3DXVECTOR3		m_vX;
@@ -75,8 +82,10 @@ private:
 
 	D3DXMATRIX		m_mtxWorld;			// ワールドマトリクス
 	MODE			m_eMode;
+	MODE			m_eModeNext;
 	MODE			m_eModeOld;
 	
+	int				m_nCount;			// 汎用カウンター
 	float			m_fMoveSpeed;
 	bool			m_bUse;				// 使用フラグ
 public:
@@ -98,6 +107,7 @@ public:
 private:
 	void	Float(void);
 	void	Fly(void);
+	void	Change(void);
 	void	ModeChange(void);
 	void	Move(void);
 	void	MoveFunc(float);

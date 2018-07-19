@@ -65,6 +65,15 @@ Player::Player(void)
 
 	D3DXMatrixIdentity(&m_mtxWorld);
 
+	// カメラをAtをモデルに設定
+	Camera::SetAt(m_vPos + (m_vY * 30));
+
+	// カメラUpをモデル上部に設定
+	//Camera::SetUp(D3DXVECTOR3(0.0f, 1.0f, 0.0f));
+	Camera::SetUp(m_vY);
+
+	// カメラEyeをモデル後方にセット
+	Camera::SetEye(m_vPos + m_vZ * 100);
 
 
 }
@@ -103,6 +112,9 @@ void Player::Update(void)
 		case MODE_FLY:
 			Fly();		// 飛行処理
 			break;
+		case MODE_CHANGE:
+			Change();	// 遷移処理
+			break;
 		}
 
 		// モードチェンジ
@@ -110,8 +122,6 @@ void Player::Update(void)
 
 		// ワールド変換
 		WorldConvertAxis(&m_mtxWorld, m_vPos, m_vZ, m_vY, m_vScl);
-
-
 
 		// アニメーション更新処理
 		m_CSkinMesh->Update(m_mtxWorld);
@@ -127,7 +137,16 @@ void Player::Update(void)
 			m_vY.x, m_vY.y, m_vY.z);
 		PrintDebugProc("vZ  [%f,%f,%f]\n",
 			m_vZ.x, m_vZ.y, m_vZ.z);
-		
+		PrintDebugProc("mtxX[%f,%f,%f]\n",
+			m_mtxWorld._11, m_mtxWorld._12, m_mtxWorld._13);
+		PrintDebugProc("mtxY[%f,%f,%f]\n",
+			m_mtxWorld._21, m_mtxWorld._22, m_mtxWorld._23);
+		PrintDebugProc("mtxZ[%f,%f,%f]\n",
+			m_mtxWorld._31, m_mtxWorld._32, m_mtxWorld._33);
+		PrintDebugProc("mtxA[%f,%f,%f]\n",
+			m_mtxWorld._41, m_mtxWorld._42, m_mtxWorld._43);
+		PrintDebugProc("atanTest [%f]\n",
+			-atan2(m_vZ.y, 1.0f));
 #endif
 	}
 
@@ -181,76 +200,143 @@ void Player::Float(void)
 {
 	m_vY = m_vY + (D3DXVECTOR3(0.0f, 1.0f, 0.0f)- m_vY) * 0.1f;
 
-	m_vRot.y = atan2(m_vZ.z, m_vZ.x);
-	//m_vZ = m_vZ + (D3DXVECTOR3(cosf(m_fHAngle), 0.0f, sinf(m_fHAngle)) - m_vZ) * 0.1f;
+	//m_vRot.y = atan2(m_vZ.z, m_vZ.x);
 
-
-	//if (InputPress(INPUT_UP_R) && InputPress(INPUT_DOWN_R))
-	//{
-	//}
-	//else if (InputPress(INPUT_UP_R))
-	//{
-	//	m_vRotIner.x += 0.05f;
-	//}
-	//else if (InputPress(INPUT_DOWN_R))
-	//{
-	//	m_vRotIner.x -= 0.05f;
-	//}
-
-	//if (InputPress(INPUT_LEFT_R) && InputPress(INPUT_RIGHT_R))
-	//{
-	//}
-	//else if (InputPress(INPUT_LEFT_R))
-	//{
-	//	m_vRotIner.y += 0.05f;
-	//}
-	//else if (InputPress(INPUT_RIGHT_R))
-	//{
-	//	m_vRotIner.y -= 0.05f;
-	//}
-
-	//m_vRot.x = m_vRot.x + ((m_vRotIner.x - m_vRot.x) * 0.05f);
-	//m_vRot.y = m_vRot.y + ((m_vRotIner.y - m_vRot.y) * 0.5f);
-
-	// ピッチ
 	if (InputPress(INPUT_UP_R) && InputPress(INPUT_DOWN_R))
-	{	// 同時押しは慣性を止める
-		if (m_vRot.x > 0.0f)
-			m_vRot.x = max(m_vRot.x - PLAYER_ROT_SPEED_X, 0.0f);
-		else if (m_vRot.x < 0.0f)
-			m_vRot.x = min(m_vRot.x + PLAYER_ROT_SPEED_X, 0.0f);
+	{
 	}
 	else if (InputPress(INPUT_UP_R))
-	{	// ピッチ角度を慣性で加算
-		m_vRot.x = min(m_vRot.x + PLAYER_ROT_SPEED_X, PLAYER_ROT_SPEED_MAX_X);
+	{
+		m_vRotIner.x += 0.05f;
 	}
 	else if (InputPress(INPUT_DOWN_R))
-	{	// ピッチ角度を慣性で減算
-		m_vRot.x = max(m_vRot.x - PLAYER_ROT_SPEED_X, -PLAYER_ROT_SPEED_MAX_X);
+	{
+		m_vRotIner.x -= 0.05f;
 	}
-	else
-	{	// 入力なしは慣性を止める
-		if (m_vRot.x > 0.0f)
-			m_vRot.x = max(m_vRot.x - PLAYER_ROT_SPEED_X, 0.0f);
-		else if (m_vRot.x < 0.0f)
-			m_vRot.x = min(m_vRot.x + PLAYER_ROT_SPEED_X, 0.0f);
+
+	if (InputPress(INPUT_LEFT_R) && InputPress(INPUT_RIGHT_R))
+	{
 	}
+	else if (InputPress(INPUT_LEFT_R))
+	{
+		m_vRotIner.y += 0.05f;
+	}
+	else if (InputPress(INPUT_RIGHT_R))
+	{
+		m_vRotIner.y -= 0.05f;
+	}
+
+	m_vRotIner.x -= GetMobUseY() * 0.001f;
+	m_vRotIner.y -= GetMobUseX() * 0.001f;
+
+	m_vRot.x = m_vRot.x + ((m_vRotIner.x - m_vRot.x) * 0.05f);
+	m_vRot.y = m_vRot.y + ((m_vRotIner.y - m_vRot.y) * 0.05f);
+
+	// ピッチ
+	//if (InputPress(INPUT_UP_R) && InputPress(INPUT_DOWN_R))
+	//{	// 同時押しは慣性を止める
+	//	if (m_vRot.x > 0.0f)
+	//		m_vRot.x = max(m_vRot.x - PLAYER_ROT_SPEED_X, 0.0f);
+	//	else if (m_vRot.x < 0.0f)
+	//		m_vRot.x = min(m_vRot.x + PLAYER_ROT_SPEED_X, 0.0f);
+	//}
+	//else if (InputPress(INPUT_UP_R))
+	//{	// ピッチ角度を慣性で加算
+	//	m_vRot.x = min(m_vRot.x + PLAYER_ROT_SPEED_X, PLAYER_ROT_SPEED_MAX_X);
+	//}
+	//else if (InputPress(INPUT_DOWN_R))
+	//{	// ピッチ角度を慣性で減算
+	//	m_vRot.x = max(m_vRot.x - PLAYER_ROT_SPEED_X, -PLAYER_ROT_SPEED_MAX_X);
+	//}
+	//else
+	//{	// 入力なしは慣性を止める
+	//	if (m_vRot.x > 0.0f)
+	//		m_vRot.x = max(m_vRot.x - PLAYER_ROT_SPEED_X, 0.0f);
+	//	else if (m_vRot.x < 0.0f)
+	//		m_vRot.x = min(m_vRot.x + PLAYER_ROT_SPEED_X, 0.0f);
+	//}
+
+	//// ロール
+	//if (InputPress(INPUT_LEFT_R) && InputPress(INPUT_RIGHT_R))
+	//{	// 同時押しは慣性を止める
+	//	if (m_vRot.z > 0.0f)
+	//		m_vRot.z = max(m_vRot.z - PLAYER_ROT_SPEED_Z, 0.0f);
+	//	else if (m_vRot.z < 0.0f)
+	//		m_vRot.z = min(m_vRot.z + PLAYER_ROT_SPEED_Z, 0.0f);
+	//}
+	//else if (InputPress(INPUT_RIGHT_R))
+	//{	// ロール角度を慣性で加算
+	//	m_vRot.z = min(m_vRot.z + PLAYER_ROT_SPEED_Z, PLAYER_ROT_SPEED_MAX_Z);
+	//}
+	//else if (InputPress(INPUT_LEFT_R))
+	//{	// ロール角度を慣性で減算
+	//	m_vRot.z = max(m_vRot.z - PLAYER_ROT_SPEED_Z, -PLAYER_ROT_SPEED_MAX_Z);
+	//}
+	//else
+	//{	// 入力なしは慣性を止める
+	//	if (m_vRot.z > 0.0f)
+	//		m_vRot.z = max(m_vRot.z - PLAYER_ROT_SPEED_Z, 0.0f);
+	//	else if (m_vRot.z < 0.0f)
+	//		m_vRot.z = min(m_vRot.z + PLAYER_ROT_SPEED_Z, 0.0f);
+	//}
 
 
 	//m_vZ = m_vZ + (D3DXVECTOR3(cosf(m_vRot.y), 0.0f, sinf(m_vRot.y)) - m_vZ) * 0.1f;
+
+
+	//m_vZ *= 100;
+	//m_vX = D3DXVECTOR3(m_mtxWorld._11, m_mtxWorld._12, m_mtxWorld._13);
+	//m_vZ = D3DXVECTOR3(m_mtxWorld._31, m_mtxWorld._32, m_mtxWorld._33);
+	D3DXVECTOR3 vTa = D3DXVECTOR3(0.0f,1.0f,0.0f);
+	D3DXVECTOR3 vAxis =
+		D3DXVECTOR3(cosf(m_vRot.y), 0.0f, sinf(m_vRot.y));
+
+	QuaternionCalculate(&vTa, &vAxis, m_vRot.x, &vTa);
+	
+	m_vZ = vTa;
+
+	// ローカルY軸のベクトルを外積で求める
 	CrossProduct(&m_vX, &m_vY, &m_vZ);
 
 
+	//m_vX *= 2.0f;
+	//m_vZ *= 2.0f;
+	//vAxis *= 2.0f;
 
-	D3DXVECTOR3 vEye = m_vZ;
-
-	//m_vZ *= 100;
-
-	// ロール回転を計算し、ピッチ回転用の軸を求める
-	QuaternionCalculate(&m_vZ, &m_vX, m_vRot.x, &m_vZ);
+	//D3DXVec3Normalize(&m_vX, &m_vX);
 	//D3DXVec3Normalize(&m_vZ, &m_vZ);
+	//D3DXVec3Normalize(&vAxis, &vAxis);
+
+
+
+	//// ピッチ回転を計算し、ロール回転用の軸を求める
+	//QuaternionCalculate(&m_vZ, &m_vX, m_vRot.x, &m_vZ);
+
+	//// ローカルY軸のベクトルを外積で求める
+	//CrossProduct(&m_vY, &m_vZ, &m_vX);
+
+	//// ピッチ回転を計算し、ロール回転用の軸を求める
+	//QuaternionCalculate(&m_vZ, &m_vY, m_vRot.z, &m_vZ);
+
+	//// ローカルY軸のベクトルを外積で求める
+	//CrossProduct(&m_vX, &m_vY, &m_vZ);
+
+
+
+	//D3DXVec3Normalize(&m_vX, &m_vX);
+	//D3DXVec3Normalize(&m_vZ, &m_vZ);
+	//D3DXVec3Normalize(&vAxis, &vAxis);
+
 
 	//m_vZ = vEye;
+
+#ifdef _DEBUG
+	PrintDebugProc("【 Float 】\n");
+	PrintDebugProc("vX  [%f,%f,%f]\n", m_vX.x, m_vX.y, m_vX.z);
+	PrintDebugProc("vZ  [%f,%f,%f]\n", m_vZ.x, m_vZ.y, m_vZ.z);
+	PrintDebugProc("Axis[%f,%f,%f]\n", vAxis.x, vAxis.y, vAxis.z);
+	//PrintDebugProc("Axis[%f,%f,%f]\n", vAxis.x, vAxis.y, vAxis.z);
+#endif
 
 	// 移動処理
 	if (InputPress(INPUT_LEFT))
@@ -258,10 +344,12 @@ void Player::Float(void)
 		if (InputPress(INPUT_UP))
 		{// 左前移動
 			//MoveFunc(m_fHAngle + D3DX_PI * 0.25f);
+			m_vPos += (m_vX - m_vZ) * 0.71f * m_fMoveSpeed;
 		}
 		else if (InputPress(INPUT_DOWN))
 		{// 左後移動
 			//MoveFunc(m_fHAngle + D3DX_PI * 0.75f);
+			m_vPos += (m_vX + m_vZ) * 0.71f * m_fMoveSpeed;
 		}
 		else if (InputPress(INPUT_RIGHT))
 		{// 左右同時押しは処理なし
@@ -269,6 +357,7 @@ void Player::Float(void)
 		else
 		{// 左移動
 			//MoveFunc(m_fHAngle + D3DX_PI * 0.50f);
+			m_vPos += m_vX * m_fMoveSpeed;
 		}
 	}
 	else if (InputPress(INPUT_RIGHT))
@@ -276,14 +365,17 @@ void Player::Float(void)
 		if (InputPress(INPUT_UP))
 		{// 右前移動
 			//MoveFunc(m_fHAngle - D3DX_PI * 0.25f);
+			m_vPos -= (m_vX + m_vZ) * 0.71f * m_fMoveSpeed;
 		}
 		else if (InputPress(INPUT_DOWN))
 		{// 右後移動
 			//MoveFunc(m_fHAngle - D3DX_PI * 0.75f);
+			m_vPos -= (m_vX - m_vZ) * 0.71f * m_fMoveSpeed;
 		}
 		else
 		{// 右移動
 			//MoveFunc(m_fHAngle - D3DX_PI * 0.50f);
+			m_vPos -= m_vX * m_fMoveSpeed;
 		}
 	}
 	else if (InputPress(INPUT_UP))
@@ -317,7 +409,9 @@ void Player::Float(void)
 
 	// カメラUpをモデル上部に設定
 	Camera::SetUp(m_vY);
-
+	//Camera::SetUp(D3DXVECTOR3(0.0f, 1.0f, 0.0f));
+	
+	//Cube::SetPos(m_vPos - m_vZ * 100);
 }
 
 //=============================================================================
@@ -388,6 +482,8 @@ void Player::Fly(void)
 	// 移動量を適用
 	m_vPos -= m_vMove;
 
+	m_vUp = m_vY;
+
 	// カメラをAtをモデルに設定
 	Camera::SetAt(m_vPos + (m_vY * 30));
 
@@ -403,22 +499,56 @@ void Player::Fly(void)
 //=============================================================================
 // 移動処理
 //=============================================================================
+void Player::Change(void)
+{
+	if (m_nCount < PLAYER_CHANGE_FRAME)
+	{
+		m_vY += m_vRotChange;
+		m_nCount++;
+	}
+	else
+	{
+		MatrixRotationVecAndUp(&m_mtxWorld, m_vZ, m_vY);
+		m_vX = D3DXVECTOR3(m_mtxWorld._11, m_mtxWorld._12, m_mtxWorld._13);
+		m_vZ = D3DXVECTOR3(m_mtxWorld._31, m_mtxWorld._32, m_mtxWorld._33);
+		m_vUp = D3DXVECTOR3(0.0f, 1.0f, 0.0f);
+		m_eMode = MODE_FLOAT;
+	}
+
+	// カメラをAtをモデルに設定
+	Camera::SetAt(m_vPos + (m_vY * 30));
+
+	// カメラEyeをモデル後方にセット
+	Camera::SetEye(m_vPos + (m_vY * 30) + m_vZ * 200);
+
+
+	// カメラUpをモデル上部に設定
+	Camera::SetUp(m_vY);
+	//Camera::SetUp(D3DXVECTOR3(0.0f, 1.0f, 0.0f));
+
+	Cube::SetPos(m_vPos - m_vZ * 100);
+}
+
+
+//=============================================================================
+// 移動処理
+//=============================================================================
 void Player::Move(void)
 {
-	if (InputPress(INPUT_UP) && InputPress(INPUT_DOWN))
+	if (GetKeyboardPress(DIK_Q) && GetKeyboardPress(DIK_E))
 	{
 		//if (m_fMoveSpeed > 0.0f)
 		//	m_fMoveSpeed = max(m_fMoveSpeed - PLAYER_MOVE_SPEED, 0.0f);
 		//else if (m_fMoveSpeed < 0.0f)
 		//	m_fMoveSpeed = min(m_fMoveSpeed + PLAYER_MOVE_SPEED, 0.0f);
 	}
-	else if (InputPress(INPUT_UP))
-	{
-		m_fMoveSpeed = min(m_fMoveSpeed + PLAYER_MOVE_SPEED, PLAYER_MOVE_SPEED_MAX);
-	}
-	else if (InputPress(INPUT_DOWN))
+	else if (GetKeyboardPress(DIK_Q))
 	{
 		m_fMoveSpeed = max(m_fMoveSpeed - PLAYER_MOVE_SPEED, PLAYER_MOVE_SPEED_MIN);
+	}
+	else if (GetKeyboardPress(DIK_E))
+	{
+		m_fMoveSpeed = min(m_fMoveSpeed + PLAYER_MOVE_SPEED, PLAYER_MOVE_SPEED_MAX);
 	}
 	else
 	{
@@ -452,7 +582,7 @@ void Player::ModeChange(void)
 		{
 		case MODE_FLOAT:
 			//m_vRot = D3DXVECTOR3(PLAYER_FLOAT_ROT_X,0.0f,0.0f);
-			m_vRot = ZERO_D3DXVECTOR3;
+			m_vRot = D3DXVECTOR3(PLAYER_FLOAT_ROT_X - atan2(m_vZ.y, 1.0f), -atan2(m_vZ.x, m_vZ.z),0.0f);
 			m_vRotIner = m_vRot;
 			Camera::SetEyeIner(0.01f);
 			break;
@@ -461,6 +591,10 @@ void Player::ModeChange(void)
 			Camera::SetEyeIner(0.05f);
 			break;
 		case MODE_LOCKON:
+			break;
+		case MODE_CHANGE:
+			m_vRotChange = (D3DXVECTOR3(0.0f, 1.0f, 0.0f) - m_vY) / PLAYER_CHANGE_FRAME;	
+			m_nCount = 0;
 			break;
 		}
 		m_eModeOld = m_eMode;
