@@ -45,7 +45,8 @@ public:
 		FRAME,
 		PLAYER,
 		SKYDOME,
-		CUBE
+		CUBE,
+		STENCIL
 	};
 	// ルートポインタ
 	enum ObjectRoot

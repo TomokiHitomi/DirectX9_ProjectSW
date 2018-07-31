@@ -166,8 +166,10 @@
     <ClCompile Include="SkinMeshX.cpp" />
     <ClCompile Include="skydome.cpp" />
     <ClCompile Include="sound.cpp" />
+    <ClCompile Include="stencil.cpp" />
     <ClCompile Include="title.cpp" />
     <ClCompile Include="XModel.cpp" />
+    <ClCompile Include="XTexture.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="air_water_frame.h" />
@@ -189,8 +191,10 @@
     <ClInclude Include="SkinMeshX.h" />
     <ClInclude Include="skydome.h" />
     <ClInclude Include="sound.h" />
+    <ClInclude Include="stencil.h" />
     <ClInclude Include="title.h" />
     <ClInclude Include="XModel.h" />
+    <ClInclude Include="XTexture.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

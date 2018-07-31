@@ -20,6 +20,7 @@
 #include "player.h"
 #include "skydome.h"
 #include "cube.h"
+#include "stencil.h"
 
 /* Debug */
 #ifdef _DEBUG
@@ -91,6 +92,8 @@ TitleScene::TitleScene(void)
 	new Player;
 	new Skydome;
 	new Cube;
+	//new Stencil;
+
 
 	// 指定オブジェクト取得テスト
 	Object *pTest1 = Object::GetObjectPointer(Object::PLAYER);

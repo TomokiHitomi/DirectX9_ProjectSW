@@ -54,6 +54,7 @@ Player::Player(void)
 	m_eModeOld = MODE_MAX;	// 1フレーム目はモードチェンジに入りたい
 
 	m_fMoveSpeed = PLAYER_MOVE_SPEED_MIN;
+	m_fRiseSpeed = 0.0f;
 	m_bUse = true;
 
 	// モデルの初期化
@@ -75,7 +76,15 @@ Player::Player(void)
 	// カメラEyeをモデル後方にセット
 	Camera::SetEye(m_vPos + m_vZ * 100);
 
+	m_CXTexture2.data.vPos = D3DXVECTOR2(1920 / 2, 1080 / 2);
+	m_CXTexture2.data.vSize = D3DXVECTOR2(1920 / 2, 1080 / 2);
+	m_CXTexture2.data.nDivide.x = 1;
+	m_CXTexture2.data.nDivide.y = 1;
+	m_CXTexture2.data.xColor = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
+	m_CXTexture2.data.nTexNum = 0;
 
+	// テクスチャの初期化
+	m_CXTexture2.Init(pDevice, PLAYER_MODEL_TEST);
 }
 
 //=============================================================================
@@ -111,6 +120,9 @@ void Player::Update(void)
 			break;
 		case MODE_FLY:
 			Fly();		// 飛行処理
+			break;
+		case MODE_LOCKON:
+			LOCKON();	// 照準処理
 			break;
 		case MODE_CHANGE:
 			Change();	// 遷移処理
@@ -168,6 +180,24 @@ void Player::Draw(void)
 
 	if (m_bUse)
 	{
+		// Zバッファへの書き込み禁止
+		pDevice->SetRenderState(D3DRS_ZWRITEENABLE, FALSE);
+		// ステンシルテスト許可
+		pDevice->SetRenderState(D3DRS_STENCILENABLE, TRUE);
+		// ステンシルマスクの設定 データはそのまま使う
+		pDevice->SetRenderState(D3DRS_STENCILMASK, 0xff);
+		// ステンシルテストに強制的に合格（必ず書き込む）
+		pDevice->SetRenderState(D3DRS_STENCILFUNC, D3DCMP_ALWAYS);
+		// バックバッファへRGB値を書き込まない
+		pDevice->SetRenderState(D3DRS_COLORWRITEENABLE, 0x00);
+		// ステンシルテストに不合格の場合はステンシル値に何もしない
+		pDevice->SetRenderState(D3DRS_STENCILFAIL, D3DSTENCILCAPS_KEEP);
+		// Zバッファに不合格の場合はステンシル値になにもしない
+		pDevice->SetRenderState(D3DRS_STENCILZFAIL, D3DSTENCILCAPS_KEEP);
+		// ステンシルテストに合格の場合ステンシル値を1増やす
+		pDevice->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILCAPS_INCRSAT);
+
+
 		// αテストを有効に
 		pDevice->SetRenderState(D3DRS_ALPHATESTENABLE, TRUE);
 		pDevice->SetRenderState(D3DRS_ALPHAREF, PLAYER_ALPHA_TEST);
@@ -176,7 +206,7 @@ void Player::Draw(void)
 		// 両面描画する
 		pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 
-		// モデルを描画
+		// モデルを描画-
 		m_CSkinMesh->Draw(pDevice);
 
 		// 裏面をカリングに戻す
@@ -185,6 +215,24 @@ void Player::Draw(void)
 		// αテストを無効に
 		pDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
 
+
+
+		// ステンシルバッファの値と比較する参照値
+		pDevice->SetRenderState(D3DRS_STENCILREF, 0x09);
+		// 比較関数、条件が真の時ステンシルテスト合格
+		pDevice->SetRenderState(D3DRS_STENCILFUNC, D3DCMP_LESSEQUAL);
+		// ステンシルテストに合格した場合ステンシル値に何もしない
+		pDevice->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILCAPS_KEEP);
+		// フレームバッファにRGBを書き込めるようにする
+		pDevice->SetRenderState(D3DRS_COLORWRITEENABLE,
+			D3DCOLORWRITEENABLE_RED |
+			D3DCOLORWRITEENABLE_GREEN |
+			D3DCOLORWRITEENABLE_BLUE |
+			D3DCOLORWRITEENABLE_ALPHA);
+		// Zバッファへの書き込みを許可する
+		pDevice->SetRenderState(D3DRS_ZWRITEENABLE, TRUE);
+
+		m_CXTexture2.Draw();
 	}
 
 	// ライティングを通常に戻す
@@ -226,11 +274,32 @@ void Player::Float(void)
 		m_vRotIner.y -= 0.05f;
 	}
 
+	// マウス
 	m_vRotIner.x -= GetMobUseY() * 0.001f;
 	m_vRotIner.y -= GetMobUseX() * 0.001f;
 
 	m_vRot.x = m_vRot.x + ((m_vRotIner.x - m_vRot.x) * 0.05f);
 	m_vRot.y = m_vRot.y + ((m_vRotIner.y - m_vRot.y) * 0.05f);
+
+
+
+	if (GetKeyboardPress(DIK_SPACE) && GetKeyboardPress(DIK_LSHIFT))
+	{
+		m_fRiseSpeed = max(m_fRiseSpeed - 0.5f, -10.0f);
+	}
+	else if (GetKeyboardPress(DIK_SPACE))
+	{
+		m_fRiseSpeed = min(m_fRiseSpeed + 0.5f, PLAYER_MOVE_SPEED_MAX);
+	}
+	else
+	{
+		if (m_fRiseSpeed > 0.0f)
+			m_fRiseSpeed = max(m_fRiseSpeed - 0.2f, 0.0f);
+		else if (m_fRiseSpeed < 0.0f)
+			m_fRiseSpeed = min(m_fRiseSpeed + 0.2f, 0.0f);
+	}
+
+
 
 	// ピッチ
 	//if (InputPress(INPUT_UP_R) && InputPress(INPUT_DOWN_R))
@@ -393,6 +462,7 @@ void Player::Float(void)
 		m_vPos += m_vZ * m_fMoveSpeed;
 	}
 
+	m_vPos.y += m_fRiseSpeed;
 
 	// 移動を適用
 	//m_vPos += m_vMove;
@@ -406,6 +476,7 @@ void Player::Float(void)
 
 	// カメラ慣性を減らす
 	Camera::AddEyeIner(0.02f);
+	Camera::AddAtIner(0.02f);
 
 	// カメラUpをモデル上部に設定
 	Camera::SetUp(m_vY);
@@ -427,11 +498,11 @@ void Player::Fly(void)
 		else if (m_vRot.x < 0.0f)
 			m_vRot.x = min(m_vRot.x + PLAYER_ROT_SPEED_X, 0.0f);
 	}
-	else if (InputPress(INPUT_UP_R))
+	else if (InputPress(INPUT_DOWN_R))
 	{	// ピッチ角度を慣性で加算
 		m_vRot.x = min(m_vRot.x + PLAYER_ROT_SPEED_X, PLAYER_ROT_SPEED_MAX_X);
 	}
-	else if (InputPress(INPUT_DOWN_R))
+	else if (InputPress(INPUT_UP_R))
 	{	// ピッチ角度を慣性で減算
 		m_vRot.x = max(m_vRot.x - PLAYER_ROT_SPEED_X, -PLAYER_ROT_SPEED_MAX_X);
 	}
@@ -467,6 +538,10 @@ void Player::Fly(void)
 			m_vRot.z = min(m_vRot.z + PLAYER_ROT_SPEED_Z, 0.0f);
 	}
 
+	m_vRotIner.x = GetMobUseY() * 0.00006f;
+	m_vRotIner.z = GetMobUseX() * 0.00006f;
+	m_vRot += m_vRotIner;
+
 	// ロール回転を計算し、ピッチ回転用の軸を求める
 	QuaternionCalculate(&m_vX, &m_vZ, m_vRot.z, &m_vX);
 
@@ -491,9 +566,187 @@ void Player::Fly(void)
 	//Camera::SetUp(D3DXVECTOR3(0.0f, 1.0f, 0.0f));
 	Camera::SetUp(m_vY);
 
+	Camera::AddAtIner(0.02f);
+
 	// カメラEyeをモデル後方にセット
 	Camera::SetEye(m_vPos + m_vZ * 100);
 	//SetCameraEye(m_vPos - m_vZ * 100 + m_vY * 50);
+}
+
+//=============================================================================
+// 浮遊処理
+//=============================================================================
+void Player::LOCKON(void)
+{
+
+	if (GetKeyboardPress(DIK_SPACE) && GetKeyboardPress(DIK_LSHIFT))
+	{
+		m_fRiseSpeed = max(m_fRiseSpeed - 0.5f, -10.0f);
+	}
+	else if (GetKeyboardPress(DIK_SPACE))
+	{
+		m_fRiseSpeed = min(m_fRiseSpeed + 0.5f, PLAYER_MOVE_SPEED_MAX);
+	}
+	else
+	{
+		if (m_fRiseSpeed > 0.0f)
+			m_fRiseSpeed = max(m_fRiseSpeed - 0.2f, 0.0f);
+		else if (m_fRiseSpeed < 0.0f)
+			m_fRiseSpeed = min(m_fRiseSpeed + 0.2f, 0.0f);
+	}
+
+	m_vPos.y += m_fRiseSpeed;
+
+	// Ｙベクトルを上に向ける
+	m_vY = m_vY + (D3DXVECTOR3(0.0f, 1.0f, 0.0f) - m_vY) * 0.1f;
+
+	// 対象座標と自らの座標を減算
+	D3DXVECTOR3 vLook = ZERO_D3DXVECTOR3 - m_vPos;
+	vLook *= -1.0f;
+
+	D3DXVec3Normalize(&vLook, &vLook);
+
+
+	m_vZ = m_vZ + (vLook - m_vZ) * 0.1f;
+
+
+	// 自らが向くベクトルを正規化する
+	D3DXVec3Normalize(&m_vZ, &m_vZ);
+
+	//m_vZ *= -1.0f;
+
+	// ローカルX軸のベクトルを外積で求める
+	CrossProduct(&m_vX, &m_vY, &m_vZ);
+
+	// X軸を正規化する
+	D3DXVec3Normalize(&m_vX, &m_vX);
+
+	//if (InputPress(INPUT_UP_R) && InputPress(INPUT_DOWN_R))
+	//{
+	//}
+	//else if (InputPress(INPUT_UP_R))
+	//{
+	//	m_vRotIner.x += 0.05f;
+	//}
+	//else if (InputPress(INPUT_DOWN_R))
+	//{
+	//	m_vRotIner.x -= 0.05f;
+	//}
+
+	//if (InputPress(INPUT_LEFT_R) && InputPress(INPUT_RIGHT_R))
+	//{
+	//}
+	//else if (InputPress(INPUT_LEFT_R))
+	//{
+	//	m_vRotIner.y += 0.05f;
+	//}
+	//else if (InputPress(INPUT_RIGHT_R))
+	//{
+	//	m_vRotIner.y -= 0.05f;
+	//}
+
+	//m_vRotIner.x -= GetMobUseY() * 0.001f;
+	//m_vRotIner.y -= GetMobUseX() * 0.001f;
+
+	//m_vRot.x = m_vRot.x + ((m_vRotIner.x - m_vRot.x) * 0.05f);
+	//m_vRot.y = m_vRot.y + ((m_vRotIner.y - m_vRot.y) * 0.05f);
+
+
+	//D3DXVECTOR3 vTa = D3DXVECTOR3(0.0f, 1.0f, 0.0f);
+	//D3DXVECTOR3 vAxis =
+	//	D3DXVECTOR3(cosf(m_vRot.y), 0.0f, sinf(m_vRot.y));
+
+	//QuaternionCalculate(&m_vZ, &vAxis, m_vRot.x, &vTa);
+
+	//m_vZ = vTa;
+
+	//// ローカルY軸のベクトルを外積で求める
+	//CrossProduct(&m_vX, &m_vY, &m_vZ);
+
+
+#ifdef _DEBUG
+	PrintDebugProc("【 Float 】\n");
+	PrintDebugProc("vX  [%f,%f,%f]\n", m_vX.x, m_vX.y, m_vX.z);
+	PrintDebugProc("vZ  [%f,%f,%f]\n", m_vZ.x, m_vZ.y, m_vZ.z);
+	//PrintDebugProc("Axis[%f,%f,%f]\n", vAxis.x, vAxis.y, vAxis.z);
+	//PrintDebugProc("Axis[%f,%f,%f]\n", vAxis.x, vAxis.y, vAxis.z);
+#endif
+
+	// 移動処理
+	if (InputPress(INPUT_LEFT))
+	{
+		if (InputPress(INPUT_UP))
+		{// 左前移動
+		 //MoveFunc(m_fHAngle + D3DX_PI * 0.25f);
+			m_vPos += (m_vX - m_vZ) * 0.71f * m_fMoveSpeed;
+		}
+		else if (InputPress(INPUT_DOWN))
+		{// 左後移動
+		 //MoveFunc(m_fHAngle + D3DX_PI * 0.75f);
+			m_vPos += (m_vX + m_vZ) * 0.71f * m_fMoveSpeed;
+		}
+		else if (InputPress(INPUT_RIGHT))
+		{// 左右同時押しは処理なし
+		}
+		else
+		{// 左移動
+		 //MoveFunc(m_fHAngle + D3DX_PI * 0.50f);
+			m_vPos += m_vX * m_fMoveSpeed;
+		}
+	}
+	else if (InputPress(INPUT_RIGHT))
+	{
+		if (InputPress(INPUT_UP))
+		{// 右前移動
+		 //MoveFunc(m_fHAngle - D3DX_PI * 0.25f);
+			m_vPos -= (m_vX + m_vZ) * 0.71f * m_fMoveSpeed;
+		}
+		else if (InputPress(INPUT_DOWN))
+		{// 右後移動
+		 //MoveFunc(m_fHAngle - D3DX_PI * 0.75f);
+			m_vPos -= (m_vX - m_vZ) * 0.71f * m_fMoveSpeed;
+		}
+		else
+		{// 右移動
+		 //MoveFunc(m_fHAngle - D3DX_PI * 0.50f);
+			m_vPos -= m_vX * m_fMoveSpeed;
+		}
+	}
+	else if (InputPress(INPUT_UP))
+	{// 前移動
+		if (InputPress(INPUT_DOWN))
+		{// 前後同時押しは処理なし
+		}
+		else
+		{
+			m_vPos += -m_vZ * m_fMoveSpeed;
+		}
+	}
+	else if (InputPress(INPUT_DOWN))
+	{// 後移動
+		m_vPos += m_vZ * m_fMoveSpeed;
+	}
+
+
+	// 移動を適用
+	//m_vPos += m_vMove;
+
+
+	// カメラをAtをモデルに設定
+	Camera::SetAt(ZERO_D3DXVECTOR3);
+
+	// カメラEyeをモデル後方にセット
+	Camera::SetEye(m_vPos + (m_vY * 30) + m_vZ * 100);
+
+	// カメラ慣性を減らす
+	Camera::AddEyeIner(0.05f);
+	Camera::AddAtIner(0.02f);
+
+	// カメラUpをモデル上部に設定
+	Camera::SetUp(m_vY);
+	//Camera::SetUp(D3DXVECTOR3(0.0f, 1.0f, 0.0f));
+
+	//Cube::SetPos(m_vPos - m_vZ * 100);
 }
 
 //=============================================================================
@@ -572,7 +825,7 @@ void Player::ModeChange(void)
 	{
 		m_eMode = MODE_FLY;
 	}
-	if (GetKeyboardTrigger(DIK_3))
+	if (GetKeyboardTrigger(DIK_TAB))
 	{
 		m_eMode = MODE_LOCKON;
 	}
@@ -585,12 +838,17 @@ void Player::ModeChange(void)
 			m_vRot = D3DXVECTOR3(PLAYER_FLOAT_ROT_X - atan2(m_vZ.y, 1.0f), -atan2(m_vZ.x, m_vZ.z),0.0f);
 			m_vRotIner = m_vRot;
 			Camera::SetEyeIner(0.01f);
+			Camera::SetAtIner(0.05f);
 			break;
 		case MODE_FLY:
 			m_vRot = ZERO_D3DXVECTOR3;
 			Camera::SetEyeIner(0.05f);
+			Camera::SetAtIner(0.05f);
 			break;
 		case MODE_LOCKON:
+			m_vRot = ZERO_D3DXVECTOR3;
+			Camera::SetEyeIner(1.0f);
+			Camera::SetAtIner(0.05f);
 			break;
 		case MODE_CHANGE:
 			m_vRotChange = (D3DXVECTOR3(0.0f, 1.0f, 0.0f) - m_vY) / PLAYER_CHANGE_FRAME;	

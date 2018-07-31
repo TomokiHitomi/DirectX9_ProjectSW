@@ -12,12 +12,14 @@
 *******************************************************************************/
 #include "object.h"
 #include "SkinMeshX.h"
+#include "XTexture.h"
 
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
 // モデル
 #define PLAYER_MODEL				("flower.X")
+#define PLAYER_MODEL_TEST			("data/TEXTURE/sky1.jpg")
 
 // モデルスケール
 #define PLAYER_SCL					(0.5f)
@@ -67,6 +69,8 @@ private:
 		MODE_MAX
 	};
 	CSkinMesh		*m_CSkinMesh;		// スキンメッシュ格納用
+	CXTexture		m_CXTexture2;
+
 	D3DXVECTOR3		m_vPos;				// 座標情報
 	D3DXVECTOR3		m_vRot;				// 回転情報
 	D3DXVECTOR3		m_vScl;				// 拡縮情報
@@ -87,6 +91,7 @@ private:
 	
 	int				m_nCount;			// 汎用カウンター
 	float			m_fMoveSpeed;
+	float			m_fRiseSpeed;
 	bool			m_bUse;				// 使用フラグ
 public:
 	enum PLAYER
@@ -107,6 +112,7 @@ public:
 private:
 	void	Float(void);
 	void	Fly(void);
+	void	LOCKON(void);
 	void	Change(void);
 	void	ModeChange(void);
 	void	Move(void);

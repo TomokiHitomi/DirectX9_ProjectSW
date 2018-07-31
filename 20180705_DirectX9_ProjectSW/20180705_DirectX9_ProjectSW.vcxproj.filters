@@ -28,7 +28,7 @@
     <Filter Include="ソース ファイル\Camera">
       <UniqueIdentifier>{4d874934-1bce-4d45-8984-c134e17fa182}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ソース ファイル\Model">
+    <Filter Include="ソース ファイル\ModelAndTex">
       <UniqueIdentifier>{3d24d3d2-0796-4ec6-a1e9-b1fd3c37e2a4}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -79,7 +79,7 @@
       <Filter>ソース ファイル\System</Filter>
     </ClCompile>
     <ClCompile Include="SkinMeshX.cpp">
-      <Filter>ソース ファイル\Model</Filter>
+      <Filter>ソース ファイル\ModelAndTex</Filter>
     </ClCompile>
     <ClCompile Include="camera.cpp">
       <Filter>ソース ファイル\Camera</Filter>
@@ -88,9 +88,15 @@
       <Filter>ソース ファイル\Object</Filter>
     </ClCompile>
     <ClCompile Include="XModel.cpp">
-      <Filter>ソース ファイル\Model</Filter>
+      <Filter>ソース ファイル\ModelAndTex</Filter>
     </ClCompile>
     <ClCompile Include="cube.cpp">
+      <Filter>ソース ファイル\Object\Test</Filter>
+    </ClCompile>
+    <ClCompile Include="XTexture.cpp">
+      <Filter>ソース ファイル\ModelAndTex</Filter>
+    </ClCompile>
+    <ClCompile Include="stencil.cpp">
       <Filter>ソース ファイル\Object\Test</Filter>
     </ClCompile>
   </ItemGroup>
@@ -144,7 +150,7 @@
       <Filter>ソース ファイル\System</Filter>
     </ClInclude>
     <ClInclude Include="SkinMeshX.h">
-      <Filter>ソース ファイル\Model</Filter>
+      <Filter>ソース ファイル\ModelAndTex</Filter>
     </ClInclude>
     <ClInclude Include="camera.h">
       <Filter>ソース ファイル\Camera</Filter>
@@ -153,9 +159,15 @@
       <Filter>ソース ファイル\Object</Filter>
     </ClInclude>
     <ClInclude Include="XModel.h">
-      <Filter>ソース ファイル\Model</Filter>
+      <Filter>ソース ファイル\ModelAndTex</Filter>
     </ClInclude>
     <ClInclude Include="cube.h">
+      <Filter>ソース ファイル\Object\Test</Filter>
+    </ClInclude>
+    <ClInclude Include="XTexture.h">
+      <Filter>ソース ファイル\ModelAndTex</Filter>
+    </ClInclude>
+    <ClInclude Include="stencil.h">
       <Filter>ソース ファイル\Object\Test</Filter>
     </ClInclude>
   </ItemGroup>

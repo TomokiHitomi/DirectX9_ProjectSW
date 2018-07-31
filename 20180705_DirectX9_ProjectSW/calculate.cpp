@@ -71,11 +71,8 @@ void MatrixRotationVecAndUp(D3DXMATRIX *mtxOut, D3DXVECTOR3 vLook, D3DXVECTOR3 v
 {
 	D3DXVECTOR3 X, Y, Z, Up;
 
-	Up = vUp;
-	Z = vLook;
-	D3DXVec3Normalize(&Z, &Z);
-	D3DXVec3Normalize(&Up, &Up);
-	D3DXVec3Cross(&X, D3DXVec3Normalize(&Y, &Up), &Z);
+	D3DXVec3Normalize(&Z, &vLook);
+	D3DXVec3Cross(&X, D3DXVec3Normalize(&Y, &vUp), &Z);
 	D3DXVec3Normalize(&X, &X);
 	D3DXVec3Normalize(&Y, D3DXVec3Cross(&Y, &Z, &X));
 
