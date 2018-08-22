@@ -35,11 +35,6 @@ CHAR* HeapCopy(CHAR* sName)
 //=============================================================================
 HRESULT MY_HIERARCHY::CreateFrame(LPCTSTR Name, LPD3DXFRAME *ppNewFrame)
 {
-	testCreate++;
-	if (testCreate > 138)
-	{
-		testCreate++;
-	}
 	HRESULT hr = S_OK;
 	MYFRAME *pFrame;
 	//新しいフレームアドレス格納用変数を初期化
@@ -544,6 +539,9 @@ VOID CSkinMesh::RenderMeshContainer(LPDIRECT3DDEVICE9 pDevice, MYMESHCONTAINER* 
 	//スキンメッシュの描画
 	if (pMeshContainer->pSkinInfo != NULL)
 	{
+#ifdef _DEBUG
+		PrintDebugProc("Container  [%d]\n", m_dwContainerCount);
+#endif
 		//ボーンテーブルからバッファの先頭アドレスを取得
 		pBoneCombination = reinterpret_cast<LPD3DXBONECOMBINATION>(pMeshContainer->pBoneBuffer->GetBufferPointer());
 		//dwPrevBoneIDにUINT_MAXの値(0xffffffff)を格納
@@ -590,7 +588,18 @@ VOID CSkinMesh::RenderMeshContainer(LPDIRECT3DDEVICE9 pDevice, MYMESHCONTAINER* 
 			dwPrevBoneID = pBoneCombination[i].AttribId;
 			//メッシュの描画
 			pMeshContainer->MeshData.pMesh->DrawSubset(i);
+
+#ifdef _DEBUG
+			PrintDebugProc("Bone  [Con:%d  ID:%d  Name:%s]\n", 
+				m_dwContainerCount,
+				m_dwBoneCount,
+				pMeshContainer->pSkinInfo->GetBoneName(i));
+#endif
+			m_dwBoneCount++;
 		}
+#ifdef _DEBUG
+		PrintDebugProc("BoneMax  [%d]\n", m_dwBoneCount);
+#endif
 	}
 	//通常メッシュの場合
 	else
@@ -600,6 +609,44 @@ VOID CSkinMesh::RenderMeshContainer(LPDIRECT3DDEVICE9 pDevice, MYMESHCONTAINER* 
 	}
 }
 
+//メッシュの現在のMatrixデータ取得
+bool CSkinMesh::GetMatrix(D3DXMATRIX* out,int dwCon, int dwBone)
+{
+	MYFRAME* pFrame = (MYFRAME*)m_pFrameRoot;
+	MYMESHCONTAINER* pMeshContainer = (MYMESHCONTAINER*)pFrame->pMeshContainer;
+
+	for (unsigned int i = 0; i < dwCon; i++)
+	{
+		if (pMeshContainer != NULL)
+		{
+			//次のメッシュコンテナへアクティブを移す
+			pMeshContainer = (MYMESHCONTAINER*)pMeshContainer->pNextMeshContainer;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	if (dwBone <= pMeshContainer->dwBoneNum)
+	{
+		UINT iMatrixIndex;
+		LPD3DXBONECOMBINATION pBoneCombination;
+		//ボーンテーブルからバッファの先頭アドレスを取得
+		pBoneCombination = reinterpret_cast<LPD3DXBONECOMBINATION>(pMeshContainer->pBoneBuffer->GetBufferPointer());
+		iMatrixIndex = pBoneCombination[dwBone].BoneId[0];
+
+		//行列の情報があれば
+		if (iMatrixIndex != UINT_MAX)
+		{
+			//mStackにオフセット行列*ボーン行列を格納
+			*out = pMeshContainer->pBoneOffsetMatrices[iMatrixIndex] * (*pMeshContainer->ppBoneMatrix[iMatrixIndex]);
+		}
+		return true;
+	}
+	return false;
+}
+
 //=============================================================================
 // フレームレンダリング関数
 //=============================================================================
@@ -607,6 +654,7 @@ VOID CSkinMesh::RenderMeshContainer(LPDIRECT3DDEVICE9 pDevice, MYMESHCONTAINER* 
 //フレームをレンダリングする。
 VOID CSkinMesh::DrawFrame(LPDIRECT3DDEVICE9 pDevice, LPD3DXFRAME pFrameBase)
 {
+	m_dwBoneCount = 0;
 	MYFRAME* pFrame = (MYFRAME*)pFrameBase;
 	MYMESHCONTAINER* pMeshContainer = (MYMESHCONTAINER*)pFrame->pMeshContainer;
 	while (pMeshContainer != NULL)
@@ -620,6 +668,7 @@ VOID CSkinMesh::DrawFrame(LPDIRECT3DDEVICE9 pDevice, LPD3DXFRAME pFrameBase)
 		// }
 		//次のメッシュコンテナへアクティブを移す
 		pMeshContainer = (MYMESHCONTAINER*)pMeshContainer->pNextMeshContainer;
+		m_dwContainerCount++;
 	}
 	if (pFrame->pFrameSibling != NULL)
 	{
@@ -826,7 +875,13 @@ VOID CSkinMesh::Update(D3DXMATRIX _World) {
 //=============================================================================
 // スキンメッシュ描画関数
 //=============================================================================
-VOID CSkinMesh::Draw(LPDIRECT3DDEVICE9 lpD3DDevice) {
+VOID CSkinMesh::Draw(LPDIRECT3DDEVICE9 lpD3DDevice)
+{
+#ifdef _DEBUG
+	PrintDebugProc("【 SkinMesh 】\n");
+#endif
+	// メッシュコンテナカウンタを初期化
+	m_dwContainerCount = 0;
 	//現在のアニメーション番号を適応
 	m_pAnimController->SetTrackAnimationSet(0, m_pAnimSet[m_CurrentTrack]);
 	//0(再生中の)トラックからトラックデスクをセットする

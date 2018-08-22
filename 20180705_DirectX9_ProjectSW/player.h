@@ -18,8 +18,9 @@
 // マクロ定義
 //*****************************************************************************
 // モデル
-#define PLAYER_MODEL				("flower.X")
-#define PLAYER_MODEL_TEST			("data/TEXTURE/sky1.jpg")
+//#define PLAYER_MODEL				("flower.X")
+#define PLAYER_MODEL				("test2.X")
+#define PLAYER_MODEL_WING			("test_wing.X")
 
 // モデルスケール
 #define PLAYER_SCL					(0.5f)
@@ -68,8 +69,13 @@ private:
 		MODE_CHANGE,
 		MODE_MAX
 	};
-	CSkinMesh		*m_CSkinMesh;		// スキンメッシュ格納用
-	CXTexture		m_CXTexture2;
+	enum MODEL_TYPE
+	{
+		CHARACTER,
+		WING,
+		MODEL_TYPE_MAX
+	};
+	CSkinMesh		*m_CSkinMesh[MODEL_TYPE_MAX];	// スキンメッシュ格納用
 
 	D3DXVECTOR3		m_vPos;				// 座標情報
 	D3DXVECTOR3		m_vRot;				// 回転情報

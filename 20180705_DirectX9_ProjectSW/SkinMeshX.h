@@ -94,7 +94,8 @@ public:
 	//メッシュクラスの初期化
 	// VOID InitBase(SMESH_DATA_FILE* _pSMeshData);
 	//メッシュの現在のMatrixデータ取得
-	D3DXMATRIX GetMatrix();
+	bool GetMatrix(D3DXMATRIX* out, int dwCon, int dwBone);
+
 	CSkinMesh();
 	~CSkinMesh() {
 		Release();
@@ -134,6 +135,9 @@ public:
 	D3DXMATRIX GetBoneMatrix(LPSTR _BoneName);
 	//ボーンのマトリックスポインタ取得( ボーンの名前 )
 	D3DXMATRIX* GetpBoneMatrix(LPSTR _BoneName);
+
+	DWORD	m_dwContainerCount;			// ボーン数カウント
+	DWORD	m_dwBoneCount;			// ボーン数カウント
 private:
 	//追加
 	//すべてのフレームポインタ格納処理関数

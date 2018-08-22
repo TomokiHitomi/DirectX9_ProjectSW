@@ -10,6 +10,7 @@
 #include "input.h"
 #include "camera.h"
 #include "cube.h"
+#include "sound.h"
 
 // デバッグ用
 #ifdef _DEBUG
@@ -59,8 +60,11 @@ Player::Player(void)
 
 	// モデルの初期化
 	//m_CSkinMesh->Init(pDevice, "data/MODEL/Yuko.x");
-	m_CSkinMesh = new CSkinMesh;
-	m_CSkinMesh->Init(pDevice, PLAYER_MODEL);
+	m_CSkinMesh[CHARACTER] = new CSkinMesh;
+	m_CSkinMesh[CHARACTER]->Init(pDevice, PLAYER_MODEL);
+
+	m_CSkinMesh[WING] = new CSkinMesh;
+	m_CSkinMesh[WING]->Init(pDevice, PLAYER_MODEL_WING);
 	
 	D3DXMATRIX mtxTranslate;
 
@@ -75,16 +79,6 @@ Player::Player(void)
 
 	// カメラEyeをモデル後方にセット
 	Camera::SetEye(m_vPos + m_vZ * 100);
-
-	m_CXTexture2.data.vPos = D3DXVECTOR2(1920 / 2, 1080 / 2);
-	m_CXTexture2.data.vSize = D3DXVECTOR2(1920 / 2, 1080 / 2);
-	m_CXTexture2.data.nDivide.x = 1;
-	m_CXTexture2.data.nDivide.y = 1;
-	m_CXTexture2.data.xColor = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
-	m_CXTexture2.data.nTexNum = 0;
-
-	// テクスチャの初期化
-	m_CXTexture2.Init(pDevice, PLAYER_MODEL_TEST);
 }
 
 //=============================================================================
@@ -92,10 +86,13 @@ Player::Player(void)
 //=============================================================================
 Player::~Player(void)
 {
-	if (m_CSkinMesh != NULL)
+	for (unsigned int i = 0; i < MODEL_TYPE_MAX; i++)
 	{
-		m_CSkinMesh->Release();
-		delete m_CSkinMesh;
+		if (m_CSkinMesh[i] != NULL)
+		{
+			m_CSkinMesh[i]->Release();
+			delete m_CSkinMesh[i];
+		}
 	}
 }
 
@@ -136,7 +133,13 @@ void Player::Update(void)
 		WorldConvertAxis(&m_mtxWorld, m_vPos, m_vZ, m_vY, m_vScl);
 
 		// アニメーション更新処理
-		m_CSkinMesh->Update(m_mtxWorld);
+		D3DXMATRIX mtxTemp;
+		m_CSkinMesh[CHARACTER]->Update(m_mtxWorld);
+		//m_CSkinMesh[CHARACTER]->GetMatrix(&mtxTemp, 0, 45);
+		m_CSkinMesh[WING]->Update(m_mtxWorld);
+
+
+
 #ifdef _DEBUG
 		PrintDebugProc("Pos [%f,%f,%f]\n", m_vPos.x, m_vPos.y, m_vPos.z);
 		PrintDebugProc("Rot [%f,%f,%f]\n", m_vRot.x, m_vRot.y, m_vRot.z);
@@ -180,24 +183,6 @@ void Player::Draw(void)
 
 	if (m_bUse)
 	{
-		// Zバッファへの書き込み禁止
-		pDevice->SetRenderState(D3DRS_ZWRITEENABLE, FALSE);
-		// ステンシルテスト許可
-		pDevice->SetRenderState(D3DRS_STENCILENABLE, TRUE);
-		// ステンシルマスクの設定 データはそのまま使う
-		pDevice->SetRenderState(D3DRS_STENCILMASK, 0xff);
-		// ステンシルテストに強制的に合格（必ず書き込む）
-		pDevice->SetRenderState(D3DRS_STENCILFUNC, D3DCMP_ALWAYS);
-		// バックバッファへRGB値を書き込まない
-		pDevice->SetRenderState(D3DRS_COLORWRITEENABLE, 0x00);
-		// ステンシルテストに不合格の場合はステンシル値に何もしない
-		pDevice->SetRenderState(D3DRS_STENCILFAIL, D3DSTENCILCAPS_KEEP);
-		// Zバッファに不合格の場合はステンシル値になにもしない
-		pDevice->SetRenderState(D3DRS_STENCILZFAIL, D3DSTENCILCAPS_KEEP);
-		// ステンシルテストに合格の場合ステンシル値を1増やす
-		pDevice->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILCAPS_INCRSAT);
-
-
 		// αテストを有効に
 		pDevice->SetRenderState(D3DRS_ALPHATESTENABLE, TRUE);
 		pDevice->SetRenderState(D3DRS_ALPHAREF, PLAYER_ALPHA_TEST);
@@ -207,7 +192,8 @@ void Player::Draw(void)
 		pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 
 		// モデルを描画-
-		m_CSkinMesh->Draw(pDevice);
+		m_CSkinMesh[CHARACTER]->Draw(pDevice);
+		m_CSkinMesh[WING]->Draw(pDevice);
 
 		// 裏面をカリングに戻す
 		pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
@@ -215,26 +201,11 @@ void Player::Draw(void)
 		// αテストを無効に
 		pDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
 
-
-
-		// ステンシルバッファの値と比較する参照値
-		pDevice->SetRenderState(D3DRS_STENCILREF, 0x09);
-		// 比較関数、条件が真の時ステンシルテスト合格
-		pDevice->SetRenderState(D3DRS_STENCILFUNC, D3DCMP_LESSEQUAL);
-		// ステンシルテストに合格した場合ステンシル値に何もしない
-		pDevice->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILCAPS_KEEP);
-		// フレームバッファにRGBを書き込めるようにする
-		pDevice->SetRenderState(D3DRS_COLORWRITEENABLE,
-			D3DCOLORWRITEENABLE_RED |
-			D3DCOLORWRITEENABLE_GREEN |
-			D3DCOLORWRITEENABLE_BLUE |
-			D3DCOLORWRITEENABLE_ALPHA);
-		// Zバッファへの書き込みを許可する
-		pDevice->SetRenderState(D3DRS_ZWRITEENABLE, TRUE);
-
-		m_CXTexture2.Draw();
 	}
-
+#ifdef _DEBUG
+	PrintDebugProc("Bone  [%d]\n", m_CSkinMesh[CHARACTER]->m_dwBoneCount);
+	PrintDebugProc("Bone  [%d]\n", m_CSkinMesh[WING]->m_dwBoneCount);
+#endif
 	// ライティングを通常に戻す
 	//SetLight(LIGHT_SUB1, FALSE);
 	//SetLight(LIGHT_SUB2, FALSE);
@@ -834,6 +805,7 @@ void Player::ModeChange(void)
 		switch (m_eMode)
 		{
 		case MODE_FLOAT:
+			SetSoundBgm(SOUND_BGM_TEST2);
 			//m_vRot = D3DXVECTOR3(PLAYER_FLOAT_ROT_X,0.0f,0.0f);
 			m_vRot = D3DXVECTOR3(PLAYER_FLOAT_ROT_X - atan2(m_vZ.y, 1.0f), -atan2(m_vZ.x, m_vZ.z),0.0f);
 			m_vRotIner = m_vRot;
@@ -841,11 +813,13 @@ void Player::ModeChange(void)
 			Camera::SetAtIner(0.05f);
 			break;
 		case MODE_FLY:
+			SetSoundBgm(SOUND_BGM_TEST1);
 			m_vRot = ZERO_D3DXVECTOR3;
 			Camera::SetEyeIner(0.05f);
 			Camera::SetAtIner(0.05f);
 			break;
 		case MODE_LOCKON:
+			SetSoundBgm(SOUND_BGM_TEST2);
 			m_vRot = ZERO_D3DXVECTOR3;
 			Camera::SetEyeIner(1.0f);
 			Camera::SetAtIner(0.05f);

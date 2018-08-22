@@ -44,8 +44,8 @@ LPDWORD pdwCurrentWriteCursorSE[SOUND_SE_MAX];
 // サウンドファイルのパス（sound.hの通しナンバーと順番を合わせること）
 const TCHAR* c_soundFilename[] = {
 	// BGM
-	_T("data/SOUND/BGM/OP.wav"),
-	_T("data/SOUND/BGM/BGM.wav"),
+	_T("data/SOUND/BGM/WhiteLily_WithoutV.wav"),
+	_T("data/SOUND/BGM/WhiteLily_Violin.wav"),
 	_T("data/SOUND/BGM/ED.wav"),
 	_T("data/SOUND/BGM/select.wav"),
 	_T("data/SOUND/BGM/result_BGM.wav"),
@@ -258,39 +258,27 @@ void UpdateSoundBgm(void)
 	switch (g_nBgmFlag)
 	{
 	case SOUND_BGM_NON:
-		SetBgmVol(BGM_TITLE, false);
-		SetBgmVol(BGM_GAME, false);
-		SetBgmVol(BGM_RESULT, false);
-		SetBgmVol(BGM_SELECT, false);
-		SetBgmVol(BGM_RESULT2, false);
+		SetBgmVol(BGM_WHITELILY_V_NON, false);
+		SetBgmVol(BGM_WHITELILY_V, false);
 		break;
 	case SOUND_BGM_TITLE:
-		SetBgmVol(BGM_TITLE, true);
-		SetBgmVol(BGM_GAME, false);
-		SetBgmVol(BGM_RESULT, false);
-		SetBgmVol(BGM_SELECT, false);
-		SetBgmVol(BGM_RESULT2, false);
+
 		break;
 	case SOUND_BGM_SELECT:
-		SetBgmVol(BGM_TITLE, false);
-		SetBgmVol(BGM_GAME, false);
-		SetBgmVol(BGM_RESULT, false);
-		SetBgmVol(BGM_SELECT, true);
-		SetBgmVol(BGM_RESULT2, false);
+
 		break;
 	case SOUND_BGM_GAME:
-		SetBgmVol(BGM_TITLE, false);
-		SetBgmVol(BGM_GAME, true);
-		SetBgmVol(BGM_RESULT, false);
-		SetBgmVol(BGM_SELECT, false);
-		SetBgmVol(BGM_RESULT2, false);
 		break;
 	case SOUND_BGM_RESULT:
-		SetBgmVol(BGM_TITLE, false);
-		SetBgmVol(BGM_GAME, false);
-		SetBgmVol(BGM_RESULT, false);
-		SetBgmVol(BGM_SELECT, false);
-		SetBgmVol(BGM_RESULT2, true);
+
+		break;
+	case SOUND_BGM_TEST1:
+		SetBgmVol(BGM_WHITELILY_V_NON, true);
+		SetBgmVol(BGM_WHITELILY_V, false);
+		break;
+	case SOUND_BGM_TEST2:
+		SetBgmVol(BGM_WHITELILY_V_NON, true);
+		SetBgmVol(BGM_WHITELILY_V, true);
 		break;
 	}
 }
