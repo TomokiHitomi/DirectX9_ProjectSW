@@ -19,8 +19,10 @@
 //*****************************************************************************
 // モデル
 //#define PLAYER_MODEL				("flower.X")
-#define PLAYER_MODEL				("test2.X")
-#define PLAYER_MODEL_WING			("test_wing.X")
+#define PLAYER_MODEL				("test3.X")
+#define PLAYER_MODEL_WING			("test_wing2.X")
+#define PLAYER_MODEL_BONE_WING		("No_9_joint_Torso2")
+#define PLAYER_MODEL_BONE_RM		("No_45_joint_RightMiddle2")
 
 // モデルスケール
 #define PLAYER_SCL					(0.5f)

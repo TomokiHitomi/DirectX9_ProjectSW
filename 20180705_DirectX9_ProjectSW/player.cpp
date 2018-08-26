@@ -132,11 +132,10 @@ void Player::Update(void)
 		// ワールド変換
 		WorldConvertAxis(&m_mtxWorld, m_vPos, m_vZ, m_vY, m_vScl);
 
-		// アニメーション更新処理
-		D3DXMATRIX mtxTemp;
-		m_CSkinMesh[CHARACTER]->Update(m_mtxWorld);
-		//m_CSkinMesh[CHARACTER]->GetMatrix(&mtxTemp, 0, 45);
-		m_CSkinMesh[WING]->Update(m_mtxWorld);
+
+		m_CSkinMesh[CHARACTER]->Update();
+		m_CSkinMesh[WING]->Update();
+		//m_CSkinMesh[WING]->Update(m_mtxWorld);
 
 
 
@@ -177,6 +176,10 @@ void Player::Draw(void)
 {
 	LPDIRECT3DDEVICE9 pDevice = GetDevice();
 
+	// ワールド変換
+	WorldConvertAxis(&m_mtxWorld, m_vPos, m_vZ, m_vY, m_vScl);
+
+
 	// ライティングを強めにあてる
 	//SetLight(LIGHT_SUB1, TRUE);
 	//SetLight(LIGHT_SUB2, TRUE);
@@ -192,8 +195,33 @@ void Player::Draw(void)
 		pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 
 		// モデルを描画-
-		m_CSkinMesh[CHARACTER]->Draw(pDevice);
-		m_CSkinMesh[WING]->Draw(pDevice);
+		m_CSkinMesh[CHARACTER]->Draw(pDevice, m_mtxWorld);
+
+		// アニメーション更新処理
+		D3DXMATRIX mtxTemp, mtxOffset, mtxRot, mtxScl;
+
+		mtxTemp = m_CSkinMesh[CHARACTER]->GetBoneMatrixOffset(PLAYER_MODEL_BONE_WING, &mtxOffset);
+		//m_CSkinMesh[CHARACTER]->GetMatrix(&mtxTemp, 0, 45);
+
+		//LPSTR SearchMtx = new LPSTR[255];
+		//LPSTR SearchMtx[255] = "No_45_joint_RightMiddle2";
+
+		//strcpy_s(SearchMtx, sizeof(SearchMtx) - 1, "No_45_joint_RightMiddle2");
+
+
+
+
+		D3DXVECTOR3 vPosWing = D3DXVECTOR3(mtxTemp._41, mtxTemp._42, mtxTemp._43);
+		D3DXVECTOR3 vSclWing = D3DXVECTOR3(1.0f, 1.0f, 1.0f);
+		WorldConvertAxis(&m_mtxWorld, vPosWing, m_vZ, m_vY, vSclWing);
+		D3DXMatrixMultiply(&m_mtxWorld, &m_mtxWorld, &mtxOffset);
+
+		D3DXMatrixScaling(&mtxScl, 2.5f, 2.5f, 2.5f);
+		D3DXMatrixMultiply(&mtxTemp, &mtxScl, &mtxTemp);
+		D3DXMatrixRotationYawPitchRoll(&mtxRot, 0.0f, 1.7f, 0.0f);
+		D3DXMatrixMultiply(&mtxTemp, &mtxRot, &mtxTemp);
+
+		m_CSkinMesh[WING]->Draw(pDevice, mtxTemp);
 
 		// 裏面をカリングに戻す
 		pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);

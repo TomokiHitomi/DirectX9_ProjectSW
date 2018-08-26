@@ -112,9 +112,9 @@ public:
 	//解放処理
 	VOID Release();
 	//更新処理
-	VOID Update(D3DXMATRIX);
+	VOID Update(void);
 	//描画処理
-	VOID Draw(LPDIRECT3DDEVICE9 lpD3DDevice);
+	VOID Draw(LPDIRECT3DDEVICE9 lpD3DDevice, D3DXMATRIX _World);
 	//オブジェクトのアニメーション変更( メッシュオブジェクトの操作用番号, 変更するアニメーション番号 )
 	VOID CSkinMesh::ChangeAnim(DWORD _NewAnimNum, FLOAT fShift);
 	//現在のアニメーション番号取得
@@ -133,6 +133,7 @@ private:
 public:
 	//ボーンのマトリックス取得( ボーンの名前 )
 	D3DXMATRIX GetBoneMatrix(LPSTR _BoneName);
+	D3DXMATRIX GetBoneMatrixOffset(LPSTR _BoneName, D3DXMATRIX* Offset);
 	//ボーンのマトリックスポインタ取得( ボーンの名前 )
 	D3DXMATRIX* GetpBoneMatrix(LPSTR _BoneName);
 

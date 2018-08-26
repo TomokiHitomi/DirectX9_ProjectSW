@@ -825,7 +825,7 @@ VOID CSkinMesh::CreateFrameArray(LPD3DXFRAME _pFrame) {
 //=============================================================================
 // 更新処理
 //=============================================================================
-VOID CSkinMesh::Update(D3DXMATRIX _World) {
+VOID CSkinMesh::Update(void) {
 	//押しっぱなしによる連続切り替え防止
 	//static bool PushFlg = false; //ここでは仮でフラグを使用するが、本来はメンバ変数などにする
 	//							 //アニメーション変更チェック
@@ -866,8 +866,6 @@ VOID CSkinMesh::Update(D3DXMATRIX _World) {
 		m_pAnimController->SetTrackEnable(1, false);				// 前のアニメーションを無効にする
 	}
 
-	//マトリックス行列反映
-	m_World = _World;
 	//アニメーション時間を更新
 	m_AnimeTime++;
 }
@@ -875,11 +873,13 @@ VOID CSkinMesh::Update(D3DXMATRIX _World) {
 //=============================================================================
 // スキンメッシュ描画関数
 //=============================================================================
-VOID CSkinMesh::Draw(LPDIRECT3DDEVICE9 lpD3DDevice)
+VOID CSkinMesh::Draw(LPDIRECT3DDEVICE9 lpD3DDevice, D3DXMATRIX _World)
 {
 #ifdef _DEBUG
 	PrintDebugProc("【 SkinMesh 】\n");
 #endif
+	//マトリックス行列反映
+	m_World = _World;
 	// メッシュコンテナカウンタを初期化
 	m_dwContainerCount = 0;
 	//現在のアニメーション番号を適応
@@ -942,8 +942,11 @@ VOID CSkinMesh::ChangeAnim(DWORD _NewAnimNum, FLOAT fShift)
 //=============================================================================
 MYFRAME* CSkinMesh::SearchBoneFrame(LPSTR _BoneName, D3DXFRAME* _pFrame) {
 	MYFRAME* pFrame = (MYFRAME*)_pFrame;
-	if (strcmp(pFrame->Name, _BoneName) == 0) {
-		return pFrame;
+	if (pFrame->Name != NULL)
+	{
+		if (strcmp(pFrame->Name, _BoneName) == 0) {
+			return pFrame;
+		}
 	}
 	if (_pFrame->pFrameSibling != NULL)
 	{
@@ -976,6 +979,27 @@ D3DXMATRIX CSkinMesh::GetBoneMatrix(LPSTR _BoneName) {
 	else {
 		//単位行列を返す
 		D3DXMATRIX TmpMatrix;
+		D3DXMatrixIdentity(&TmpMatrix);
+		return TmpMatrix;
+	}
+}
+
+//=============================================================================
+// ボーンのマトリクス取得関数
+//=============================================================================
+D3DXMATRIX CSkinMesh::GetBoneMatrixOffset(LPSTR _BoneName, D3DXMATRIX* Offset) {
+	MYFRAME* pFrame = SearchBoneFrame(_BoneName, m_pFrameRoot);
+	//ボーンが見つかれば
+	if (pFrame != NULL) {
+		//ボーン行列を返す
+		*Offset = pFrame->TransformationMatrix;
+		return pFrame->CombinedTransformationMatrix;
+	}
+	//ボーンが見つからなければ
+	else {
+		//単位行列を返す
+		D3DXMATRIX TmpMatrix;
+		*Offset = TmpMatrix;
 		D3DXMatrixIdentity(&TmpMatrix);
 		return TmpMatrix;
 	}
