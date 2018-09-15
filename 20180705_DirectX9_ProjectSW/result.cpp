@@ -38,7 +38,7 @@ extern SceneManager		g_cScene;				// Sceneマネージャ
 //=============================================================================
 void ResultScene::Update(void)
 {
-	Object::UpdateAll();
+	ObjectManager::UpdateAll();
 }
 
 //=============================================================================
@@ -46,7 +46,7 @@ void ResultScene::Update(void)
 //=============================================================================
 void ResultScene::Draw(void)
 {
-	Object::DrawAll();
+	ObjectManager::DrawAll();
 }
 
 //=============================================================================
@@ -63,5 +63,5 @@ ResultScene::ResultScene(void)
 //=============================================================================
 ResultScene::~ResultScene(void)
 {
-	Object::ReleaseAll();
+	ObjectManager::ReleaseAll();
 }

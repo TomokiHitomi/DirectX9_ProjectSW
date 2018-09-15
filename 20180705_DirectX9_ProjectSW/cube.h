@@ -34,7 +34,7 @@
 // ƒNƒ‰ƒX’è‹`
 //*****************************************************************************
 
-class Cube : public Object
+class Cube : public ObjectManager
 {
 private:
 	typedef struct
@@ -65,6 +65,7 @@ public:
 	void	Draw(void);
 
 	static void SetPos(D3DXVECTOR3 vPos) { m_tagProp.vPos = vPos; }
+	D3DXVECTOR3 GetPos(void) { return m_tagProp.vPos; }
 private:
 
 };

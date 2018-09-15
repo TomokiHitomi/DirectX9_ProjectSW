@@ -18,10 +18,10 @@
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
-Object		*Object::s_pRoot[ObjectRootMax] = { NULL, NULL };
+ObjectManager		*ObjectManager::s_pRoot[ObjectRootMax] = { NULL, NULL };
 //Object	*Object::s_pRootUpdate = NULL;
 //Object	*Object::s_pRootDraw = NULL;
-int			Object::nObjectCount = 0;
+int			ObjectManager::nObjectCount = 0;
 
 //*****************************************************************************
 // プロトタイプ宣言
@@ -43,7 +43,7 @@ int			Object::nObjectCount = 0;
 //=============================================================================
 // 解放処理
 //=============================================================================
-void Object::Release(void)
+void ObjectManager::Release(void)
 {
 	// オブジェクトのリスト離脱処理
 	RemoveList();
@@ -65,7 +65,7 @@ void Object::Release(void)
 //=============================================================================
 // コンストラクタ処理（初期化）
 //=============================================================================
-Object::Object(void)
+ObjectManager::ObjectManager(void)
 {
 	// オブジェクトカウンタをインクリメント
 	nObjectCount++;
@@ -83,7 +83,7 @@ Object::Object(void)
 //=============================================================================
 // デストラクタ処理（終了）
 //=============================================================================
-Object::~Object(void)
+ObjectManager::~ObjectManager(void)
 {
 	// オブジェクトカウンタをデクリメント
 	nObjectCount--;
@@ -93,7 +93,7 @@ Object::~Object(void)
 // オブジェクトIDとプライオリティの設定処理
 // 引数：ID, 更新プライオリティ, 描画プライオリティ
 //=============================================================================
-void Object::SetIdAndPriority(ObjectID eObjId, Priority eUpdateP, Priority eDrawP)
+void ObjectManager::SetIdAndPriority(ObjectID eObjId, Priority eUpdateP, Priority eDrawP)
 {
 	//// プライオリティテスト用
 	//eObjId = ObjectID(nObjectCount);
@@ -109,10 +109,10 @@ void Object::SetIdAndPriority(ObjectID eObjId, Priority eUpdateP, Priority eDraw
 //=============================================================================
 // オブジェクトのリスト追加処理
 //=============================================================================
-void Object::InsertList(void)
+void ObjectManager::InsertList(void)
 {
-	Object **pList = NULL;
-	Object **pPrevTemp = NULL;
+	ObjectManager **pList = NULL;
+	ObjectManager **pPrevTemp = NULL;
 
 	for (unsigned int i = 0; i < ObjectRootMax; i++)
 	{
@@ -170,10 +170,10 @@ void Object::InsertList(void)
 //=============================================================================
 // オブジェクトのリスト離脱処理
 //=============================================================================
-void Object::RemoveList(void)
+void ObjectManager::RemoveList(void)
 {
 	// ルート格納用ポインタ
-	Object	**pRoot = NULL;
+	ObjectManager	**pRoot = NULL;
 
 	// リスト構造の再結合処理
 	for (unsigned int i = 0; i < ObjectRootMax; i++)
@@ -208,25 +208,25 @@ void Object::RemoveList(void)
 //=============================================================================
 // オブジェクトのポインタ取得処理
 //=============================================================================
-Object *Object::GetObjectPointer(ObjectID eObjId)
-{
-	Object *pList = Object::GetObjectRoot(UpdateRoot);
-
-	while (pList != NULL)
-	{
-		if (eObjId == pList->GetObjectId())
-		{
-			return pList;
-		}
-		pList = pList->GetObjectNext(UpdateRoot);
-	}
-	return NULL;
-}
+//template <typename Type> Type* Object::GetObjectPointer(ObjectID eObjId)
+//{
+//	Object *pList = GetObjectRoot(UpdateRoot);
+//
+//	while (pList != NULL)
+//	{
+//		if (eObjId == pList->GetObjectId())
+//		{	
+//			return dynamic_cast<Type*>(pList);
+//		}
+//		pList = pList->GetObjectNext(UpdateRoot);
+//	}
+//	return NULL;
+//}
 
 //=============================================================================
 // 全オブジェクトの更新処理
 //=============================================================================
-void Object::UpdateAll(void)
+void ObjectManager::UpdateAll(void)
 {
 
 #ifdef _DEBUG
@@ -234,7 +234,7 @@ void Object::UpdateAll(void)
 	PrintDebugProc("ObjectCount [%d]\n", nObjectCount);
 	PrintDebugProc("\n");
 
-	Object *pList = Object::GetObjectRoot(UpdateRoot);
+	ObjectManager *pList = ObjectManager::GetObjectRoot(UpdateRoot);
 
 	while (pList != NULL)
 	{
@@ -246,7 +246,7 @@ void Object::UpdateAll(void)
 #endif
 
 
-	pList = Object::GetObjectRoot(UpdateRoot);
+	pList = ObjectManager::GetObjectRoot(UpdateRoot);
 
 	while (pList != NULL)
 	{
@@ -258,9 +258,9 @@ void Object::UpdateAll(void)
 //=============================================================================
 // 全オブジェクトの描画処理
 //=============================================================================
-void Object::DrawAll(void)
+void ObjectManager::DrawAll(void)
 {
-	Object *pList = Object::GetObjectRoot(DrawRoot);
+	ObjectManager *pList = ObjectManager::GetObjectRoot(DrawRoot);
 
 	
 	while (pList != NULL)
@@ -280,10 +280,10 @@ void Object::DrawAll(void)
 //=============================================================================
 // 全オブジェクトの解放処理
 //=============================================================================
-void Object::ReleaseAll(void)
+void ObjectManager::ReleaseAll(void)
 {
-	Object *pList = NULL;
-	Object *pNext = NULL;
+	ObjectManager *pList = NULL;
+	ObjectManager *pNext = NULL;
 	for (unsigned int i = 0; i < ObjectRootMax; i++)
 	{
 		// ルートポインタをpListに格納
@@ -302,7 +302,7 @@ void Object::ReleaseAll(void)
 //=============================================================================
 // ルートポインタのアドレス取得処理
 //=============================================================================
-Object **Object::GetObjectRootAdr(ObjectRoot eObjRoot)
+ObjectManager **ObjectManager::GetObjectRootAdr(ObjectRoot eObjRoot)
 {
 	return &s_pRoot[eObjRoot];
 }
@@ -310,7 +310,7 @@ Object **Object::GetObjectRootAdr(ObjectRoot eObjRoot)
 //=============================================================================
 // ネクストポインタの取得処理
 //=============================================================================
-Object *Object::GetObjectNext(ObjectRoot eObjRoot)
+ObjectManager *ObjectManager::GetObjectNext(ObjectRoot eObjRoot)
 { 
 	return m_pNext[eObjRoot];
 }

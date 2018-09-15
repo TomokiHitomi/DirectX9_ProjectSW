@@ -22,6 +22,7 @@ CXTexture::CXTexture(void)
 {
 	// テクスチャバッファの初期化
 	m_pD3DTexture = NULL;
+	m_pD3DTexture2 = NULL;
 
 	data.vPos = D3DXVECTOR2(1920 / 2, 1080 / 2);
 	data.vSize = D3DXVECTOR2(1920 / 2, 1080 / 2);
@@ -37,10 +38,28 @@ CXTexture::CXTexture(void)
 HRESULT CXTexture::Init(LPDIRECT3DDEVICE9 pDevice, LPSTR pTexPass)
 {
 	// テクスチャの読み込み
+	//if (FAILED(D3DXCreateTextureFromFile(
+	//	pDevice,				// デバイス
+	//	pTexPass,				// ファイル名
+	//	&m_pD3DTexture)))		// 読み込むメモリ（複数なら配列に）
+	//{
+	//	return E_FAIL;
+	//}
+
 	if (FAILED(D3DXCreateTextureFromFile(
 		pDevice,				// デバイス
-		pTexPass,				// ファイル名
+		"data/TEXTURE/カービー.bmp",				// ファイル名
 		&m_pD3DTexture)))		// 読み込むメモリ（複数なら配列に）
+	{
+		return E_FAIL;
+	}
+
+
+	// テクスチャの読み込み
+	if (FAILED(D3DXCreateTextureFromFile(
+		pDevice,				// デバイス
+		"data/TEXTURE/すたふぃー.bmp",				// ファイル名
+		&m_pD3DTexture2)))		// 読み込むメモリ（複数なら配列に）
 	{
 		return E_FAIL;
 	}
@@ -76,14 +95,110 @@ void CXTexture::Draw(void)
 {
 	LPDIRECT3DDEVICE9 pDevice = GetDevice();
 
+	pDevice->SetTextureStageState(0,
+		D3DTSS_TEXCOORDINDEX,		// ブレンド時に0番目のUV座標を参照する
+		1
+	);
+
 	// テクスチャの設定
 	pDevice->SetTexture(0, m_pD3DTexture);
+	pDevice->SetTexture(1, m_pD3DTexture2);
+
+	// テクスチャステージ0の設定
+	pDevice->SetTextureStageState(0,
+		D3DTSS_COLOROP,				// RGBのOPを設定
+		D3DTOP_SELECTARG2			// ARG2の入力をそのまま出力
+	);
+
+	pDevice->SetTextureStageState(0,
+		D3DTSS_COLORARG1,			// ARG1の設定
+		D3DTA_CURRENT				// ポリゴンの色を適用
+	);
+
+	pDevice->SetTextureStageState(0,
+		D3DTSS_COLORARG2,			// ARG2の設定
+		D3DTA_TEXTURE				// テクスチャ0番を入力
+	);
+
+	pDevice->SetTextureStageState(0,
+		D3DTSS_ALPHAOP,				// αのOP設定
+		D3DTOP_SELECTARG2			// ARG2のデータを出力
+	);
+
+
+	pDevice->SetTextureStageState(0,
+		D3DTSS_ALPHAARG2,			// αのARG2の設定
+		D3DTA_CURRENT				// ポリゴンの色を適用
+	);
+
+	// テクスチャステージ1の設定
+	pDevice->SetTextureStageState(1,
+		D3DTSS_COLOROP,				// RGBのOPを設定
+		D3DTOP_BLENDTEXTUREALPHA	// テクスチャ1のαを使ってブレンド
+	);
+
+	pDevice->SetTextureStageState(1,
+		D3DTSS_COLORARG1,			// RGBのOPを設定
+		D3DTA_TEXTURE				// テクスチャ1のテクスチャを入力
+	);
+
+	pDevice->SetTextureStageState(1,
+		D3DTSS_COLORARG2,			// ARG2の設定
+		D3DTA_CURRENT				// 前のステージを出力
+	);
+
+	pDevice->SetTextureStageState(1,
+		D3DTSS_ALPHAOP,				// αのOP設定
+		D3DTOP_SELECTARG2			// ARG2のデータを出力
+	);
+
+	pDevice->SetTextureStageState(1,
+		D3DTSS_ALPHAARG1,			// αのARG1の設定
+		D3DTA_CURRENT				// 前のステージを出力
+	);
+
+	pDevice->SetTextureStageState(1,
+		D3DTSS_ALPHAARG2,			// αのARG2の設定
+		D3DTA_TEXTURE				// テクスチャ1番を入力
+	);
 
 	// 頂点フォーマットの設定
 	pDevice->SetFVF(FVF_VERTEX_2D);
 
 	// ポリゴンの描画
 	pDevice->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, NUM_POLYGON, m_VertexWk, sizeof(VERTEX_2D));
+	
+
+	//pDevice->SetTextureStageState(1,
+	//	D3DTSS_COLOROP,				// RGBのOPを設定
+	//	D3DTOP_DISABLE				// 指定ステージ以降は無効
+	//);
+
+	//pDevice->SetTextureStageState(1,
+	//	D3DTSS_ALPHAOP,				// αのOP設定
+	//	D3DTOP_DISABLE				// 指定ステージ以降は無効
+	//);
+
+	//pDevice->SetTextureStageState(0,
+	//	D3DTSS_COLORARG1,			// ARG1の設定
+	//	D3DTA_TEXTURE				// テクスチャ0番を入力
+	//);
+
+	//pDevice->SetTextureStageState(0,
+	//	D3DTSS_COLORARG2,			// ARG2の設定
+	//	D3DTA_CURRENT				// ポリゴンの色を適用
+	//);
+
+	//pDevice->SetTextureStageState(0,
+	//	D3DTSS_TEXCOORDINDEX,		// ブレンド時に0番目のUV座標を参照する
+	//	0
+	//);
+
+
+	//pDevice->SetTextureStageState(1,
+	//	D3DTSS_TEXCOORDINDEX,		// ブレンド時に0番目のUV座標を参照する
+	//	1
+	//);
 }
 
 //=============================================================================

@@ -35,11 +35,11 @@
 // クラス定義
 //*****************************************************************************
 
-class Stencil : public Object
+class Stencil : public ObjectManager
 {
 private:
 	CXTexture		m_CXTexture;		// テクスチャ格納用
-	CXTexture		m_CXTexture2;		// テクスチャ格納用
+	//CXTexture		m_CXTexture2;		// テクスチャ格納用
 	bool			m_bUse;				// 使用フラグ
 public:
 	enum STENCIL

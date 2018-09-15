@@ -71,7 +71,7 @@ typedef struct
 // クラス定義
 //*****************************************************************************
 
-class AirWaterFream : public Object
+class AirWaterFream : public ObjectManager
 {
 public:
 	// AWF管理用の列挙型

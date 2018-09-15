@@ -985,27 +985,6 @@ D3DXMATRIX CSkinMesh::GetBoneMatrix(LPSTR _BoneName) {
 }
 
 //=============================================================================
-// ボーンのマトリクス取得関数
-//=============================================================================
-D3DXMATRIX CSkinMesh::GetBoneMatrixOffset(LPSTR _BoneName, D3DXMATRIX* Offset) {
-	MYFRAME* pFrame = SearchBoneFrame(_BoneName, m_pFrameRoot);
-	//ボーンが見つかれば
-	if (pFrame != NULL) {
-		//ボーン行列を返す
-		*Offset = pFrame->TransformationMatrix;
-		return pFrame->CombinedTransformationMatrix;
-	}
-	//ボーンが見つからなければ
-	else {
-		//単位行列を返す
-		D3DXMATRIX TmpMatrix;
-		*Offset = TmpMatrix;
-		D3DXMatrixIdentity(&TmpMatrix);
-		return TmpMatrix;
-	}
-}
-
-//=============================================================================
 // ボーンのマトリクスポインタ取得関数
 //=============================================================================
 D3DXMATRIX* CSkinMesh::GetpBoneMatrix(LPSTR _BoneName) {

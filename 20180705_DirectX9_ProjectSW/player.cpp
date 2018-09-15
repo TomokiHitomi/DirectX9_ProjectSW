@@ -28,6 +28,9 @@
 //*****************************************************************************
 // グローバル変数
 //*****************************************************************************
+extern float fGyroX;
+extern float fGyroY;
+extern float fGyroZ;
 
 //=============================================================================
 // コンストラクタ（初期化処理）
@@ -40,7 +43,7 @@ Player::Player(void)
 	SetIdAndPriority(ObjectID::PLAYER, Priority::Middle, Priority::Middle);
 
 	// 各プロパティの初期化
-	m_vPos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	m_vPos = PLAYER_POS;
 	m_vRot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 	m_vScl = D3DXVECTOR3(PLAYER_SCL, PLAYER_SCL, PLAYER_SCL);
 
@@ -51,7 +54,7 @@ Player::Player(void)
 	m_vY = D3DXVECTOR3(0.0f, 1.0f, 0.0f);
 	m_vZ = D3DXVECTOR3(0.0f, 0.0f, 1.0f);
 
-	m_eMode = MODE_FLY;
+	m_eMode = MODE_FLOAT;
 	m_eModeOld = MODE_MAX;	// 1フレーム目はモードチェンジに入りたい
 
 	m_fMoveSpeed = PLAYER_MOVE_SPEED_MIN;
@@ -59,13 +62,25 @@ Player::Player(void)
 	m_bUse = true;
 
 	// モデルの初期化
-	//m_CSkinMesh->Init(pDevice, "data/MODEL/Yuko.x");
 	m_CSkinMesh[CHARACTER] = new CSkinMesh;
 	m_CSkinMesh[CHARACTER]->Init(pDevice, PLAYER_MODEL);
 
+	// ウィングの初期化
 	m_CSkinMesh[WING] = new CSkinMesh;
 	m_CSkinMesh[WING]->Init(pDevice, PLAYER_MODEL_WING);
-	
+
+	// ウィングのローカル情報を作成
+	D3DXVECTOR3 pos, rot, scl;
+	pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	rot = D3DXVECTOR3(PLAYER_WING_ROT_X, 0.0f, 0.0f);
+	scl = D3DXVECTOR3(PLAYER_WING_SCL, PLAYER_WING_SCL, PLAYER_WING_SCL);
+
+	// ウィング行列を作成
+	WorldConvert(&m_mtxWorldWing, pos, rot, scl);
+
+	// ソードの初期化
+	m_cSword = new Sword;
+
 	D3DXMATRIX mtxTranslate;
 
 	D3DXMatrixIdentity(&m_mtxWorld);
@@ -86,12 +101,19 @@ Player::Player(void)
 //=============================================================================
 Player::~Player(void)
 {
-	for (unsigned int i = 0; i < MODEL_TYPE_MAX; i++)
+	for (unsigned int i = 0; i < MODEL_ANIM_MAX; i++)
 	{
 		if (m_CSkinMesh[i] != NULL)
 		{
 			m_CSkinMesh[i]->Release();
 			delete m_CSkinMesh[i];
+		}
+	}
+	for (unsigned int i = 0; i < MODEL_NORMAL_MAX; i++)
+	{
+		if (m_cSword != NULL)
+		{
+			delete m_cSword;
 		}
 	}
 }
@@ -135,9 +157,12 @@ void Player::Update(void)
 
 		m_CSkinMesh[CHARACTER]->Update();
 		m_CSkinMesh[WING]->Update();
-		//m_CSkinMesh[WING]->Update(m_mtxWorld);
 
-
+		// ソードの更新処理
+		if (m_cSword != NULL)
+		{
+			m_cSword->Update();
+		}
 
 #ifdef _DEBUG
 		PrintDebugProc("Pos [%f,%f,%f]\n", m_vPos.x, m_vPos.y, m_vPos.z);
@@ -174,18 +199,18 @@ void Player::Update(void)
 //=============================================================================
 void Player::Draw(void)
 {
-	LPDIRECT3DDEVICE9 pDevice = GetDevice();
-
-	// ワールド変換
-	WorldConvertAxis(&m_mtxWorld, m_vPos, m_vZ, m_vY, m_vScl);
-
-
-	// ライティングを強めにあてる
-	//SetLight(LIGHT_SUB1, TRUE);
-	//SetLight(LIGHT_SUB2, TRUE);
-
 	if (m_bUse)
 	{
+		LPDIRECT3DDEVICE9 pDevice = GetDevice();
+		D3DXMATRIX mtxWing, mtxTemp;		// アニメーション更新処理
+
+		// ワールド変換
+		WorldConvertAxis(&m_mtxWorld, m_vPos, m_vZ, m_vY, m_vScl);
+
+		// ライティングを強めにあてる
+		//SetLight(LIGHT_SUB1, TRUE);
+		//SetLight(LIGHT_SUB2, TRUE);
+
 		// αテストを有効に
 		pDevice->SetRenderState(D3DRS_ALPHATESTENABLE, TRUE);
 		pDevice->SetRenderState(D3DRS_ALPHAREF, PLAYER_ALPHA_TEST);
@@ -197,31 +222,25 @@ void Player::Draw(void)
 		// モデルを描画-
 		m_CSkinMesh[CHARACTER]->Draw(pDevice, m_mtxWorld);
 
-		// アニメーション更新処理
-		D3DXMATRIX mtxTemp, mtxOffset, mtxRot, mtxScl;
+		// キャラクターのボーンマトリクスを取得
+		mtxTemp = m_CSkinMesh[CHARACTER]->GetBoneMatrix(PLAYER_MODEL_BONE_WING);
+		// ボーンマトリクスを正規化
+		D3DXMatrixNormalize(&mtxTemp, &mtxTemp);
+		
+		// ウィング行列をコピー
+		mtxWing = m_mtxWorldWing;
 
-		mtxTemp = m_CSkinMesh[CHARACTER]->GetBoneMatrixOffset(PLAYER_MODEL_BONE_WING, &mtxOffset);
-		//m_CSkinMesh[CHARACTER]->GetMatrix(&mtxTemp, 0, 45);
+		// コピーしたウィング行列にプレイヤーのボーンマトリクスをかける
+		D3DXMatrixMultiply(&mtxWing, &mtxWing, &mtxTemp);
 
-		//LPSTR SearchMtx = new LPSTR[255];
-		//LPSTR SearchMtx[255] = "No_45_joint_RightMiddle2";
+		// ウィングを描画
+		m_CSkinMesh[WING]->Draw(pDevice, mtxWing);
 
-		//strcpy_s(SearchMtx, sizeof(SearchMtx) - 1, "No_45_joint_RightMiddle2");
-
-
-
-
-		D3DXVECTOR3 vPosWing = D3DXVECTOR3(mtxTemp._41, mtxTemp._42, mtxTemp._43);
-		D3DXVECTOR3 vSclWing = D3DXVECTOR3(1.0f, 1.0f, 1.0f);
-		WorldConvertAxis(&m_mtxWorld, vPosWing, m_vZ, m_vY, vSclWing);
-		D3DXMatrixMultiply(&m_mtxWorld, &m_mtxWorld, &mtxOffset);
-
-		D3DXMatrixScaling(&mtxScl, 2.5f, 2.5f, 2.5f);
-		D3DXMatrixMultiply(&mtxTemp, &mtxScl, &mtxTemp);
-		D3DXMatrixRotationYawPitchRoll(&mtxRot, 0.0f, 1.7f, 0.0f);
-		D3DXMatrixMultiply(&mtxTemp, &mtxRot, &mtxTemp);
-
-		m_CSkinMesh[WING]->Draw(pDevice, mtxTemp);
+		// ソードを描画
+		if (m_cSword != NULL)
+		{
+			m_cSword->Draw();
+		}
 
 		// 裏面をカリングに戻す
 		pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
@@ -229,14 +248,14 @@ void Player::Draw(void)
 		// αテストを無効に
 		pDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
 
-	}
 #ifdef _DEBUG
-	PrintDebugProc("Bone  [%d]\n", m_CSkinMesh[CHARACTER]->m_dwBoneCount);
-	PrintDebugProc("Bone  [%d]\n", m_CSkinMesh[WING]->m_dwBoneCount);
+		PrintDebugProc("Bone  [%d]\n", m_CSkinMesh[CHARACTER]->m_dwBoneCount);
+		PrintDebugProc("Bone  [%d]\n", m_CSkinMesh[WING]->m_dwBoneCount);
 #endif
-	// ライティングを通常に戻す
-	//SetLight(LIGHT_SUB1, FALSE);
-	//SetLight(LIGHT_SUB2, FALSE);
+		// ライティングを通常に戻す
+		//SetLight(LIGHT_SUB1, FALSE);
+		//SetLight(LIGHT_SUB2, FALSE);
+	}
 }
 
 
@@ -363,8 +382,13 @@ void Player::Float(void)
 	
 	m_vZ = vTa;
 
-	// ローカルY軸のベクトルを外積で求める
+	// ローカルX軸のベクトルを外積で求める
 	CrossProduct(&m_vX, &m_vY, &m_vZ);
+	// ローカルX軸のベクトルを正規化
+	D3DXVec3Normalize(&m_vX, &m_vX);
+
+	// ローカルY軸のベクトルを外積で求める
+	//CrossProduct(&m_vY, &m_vZ, &m_vX);
 
 
 	//m_vX *= 2.0f;
@@ -490,18 +514,18 @@ void Player::Float(void)
 void Player::Fly(void)
 {
 	// ピッチ
-	if (InputPress(INPUT_UP_R) && InputPress(INPUT_DOWN_R))
+	if ((InputPress(INPUT_UP_R) && InputPress(INPUT_DOWN_R)) || (fGyroY < PLAYER_GYRO_MARGIN && fGyroY > -PLAYER_GYRO_MARGIN))
 	{	// 同時押しは慣性を止める
 		if (m_vRot.x > 0.0f)
 			m_vRot.x = max(m_vRot.x - PLAYER_ROT_SPEED_X, 0.0f);
 		else if (m_vRot.x < 0.0f)
 			m_vRot.x = min(m_vRot.x + PLAYER_ROT_SPEED_X, 0.0f);
 	}
-	else if (InputPress(INPUT_DOWN_R))
+	else if (InputPress(INPUT_DOWN_R) || fGyroY > PLAYER_GYRO_MARGIN)
 	{	// ピッチ角度を慣性で加算
 		m_vRot.x = min(m_vRot.x + PLAYER_ROT_SPEED_X, PLAYER_ROT_SPEED_MAX_X);
 	}
-	else if (InputPress(INPUT_UP_R))
+	else if (InputPress(INPUT_UP_R) || fGyroY < -PLAYER_GYRO_MARGIN)
 	{	// ピッチ角度を慣性で減算
 		m_vRot.x = max(m_vRot.x - PLAYER_ROT_SPEED_X, -PLAYER_ROT_SPEED_MAX_X);
 	}
@@ -514,18 +538,18 @@ void Player::Fly(void)
 	}
 
 	// ロール
-	if (InputPress(INPUT_LEFT_R) && InputPress(INPUT_RIGHT_R))
+	if (InputPress(INPUT_LEFT_R) && InputPress(INPUT_RIGHT_R) || (fGyroZ < PLAYER_GYRO_MARGIN && fGyroZ > -PLAYER_GYRO_MARGIN))
 	{	// 同時押しは慣性を止める
 		if (m_vRot.z > 0.0f)
 			m_vRot.z = max(m_vRot.z - PLAYER_ROT_SPEED_Z, 0.0f);
 		else if (m_vRot.z < 0.0f)
 			m_vRot.z = min(m_vRot.z + PLAYER_ROT_SPEED_Z, 0.0f);
 	}
-	else if (InputPress(INPUT_RIGHT_R))
+	else if (InputPress(INPUT_RIGHT_R) || fGyroZ < -PLAYER_GYRO_MARGIN)
 	{	// ロール角度を慣性で加算
 		m_vRot.z = min(m_vRot.z + PLAYER_ROT_SPEED_Z, PLAYER_ROT_SPEED_MAX_Z);
 	}
-	else if (InputPress(INPUT_LEFT_R))
+	else if (InputPress(INPUT_LEFT_R) || fGyroZ > -PLAYER_GYRO_MARGIN)
 	{	// ロール角度を慣性で減算
 		m_vRot.z = max(m_vRot.z - PLAYER_ROT_SPEED_Z, -PLAYER_ROT_SPEED_MAX_Z);
 	}

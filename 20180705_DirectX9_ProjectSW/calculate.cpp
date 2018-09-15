@@ -98,6 +98,37 @@ void MatrixRotationVecAndUp(D3DXMATRIX *mtxOut, D3DXVECTOR3 vLook, D3DXVECTOR3 v
 }
 
 //=============================================================================
+// 行列のXYZ成分の正規化（ポジションは正規化、出力しない）
+//=============================================================================
+bool D3DXMatrixNormalize(D3DXMATRIX *pOut, D3DXMATRIX *pIn)
+{
+	D3DXVECTOR3 x, y, z;
+
+	// マトリクス内のXYZ成分を抽出
+	x = D3DXVECTOR3(pIn->_11, pIn->_12, pIn->_13);
+	y = D3DXVECTOR3(pIn->_21, pIn->_22, pIn->_23);
+	z = D3DXVECTOR3(pIn->_31, pIn->_32, pIn->_33);
+
+	// 各ベクトルの正規化
+	D3DXVec3Normalize(&x, &x);
+	D3DXVec3Normalize(&y, &y);
+	D3DXVec3Normalize(&z, &z);
+
+	// 正規化したベクトルを行列に格納
+	pOut->_11 = x.x;
+	pOut->_12 = x.y;
+	pOut->_13 = x.z;
+	pOut->_21 = y.x;
+	pOut->_22 = y.y;
+	pOut->_23 = y.z;
+	pOut->_31 = z.x;
+	pOut->_32 = z.y;
+	pOut->_33 = z.z;
+
+	return true;
+}
+
+//=============================================================================
 // 内積
 //=============================================================================
 float DotProduct(D3DXVECTOR3 *vl, D3DXVECTOR3 *vr)

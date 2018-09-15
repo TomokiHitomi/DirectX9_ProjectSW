@@ -45,32 +45,32 @@
 //=============================================================================
 void TitleScene::Update(void)
 {
-	Object::UpdateAll();
+	ObjectManager::UpdateAll();
 #ifdef _DEBUG
-	if (GetKeyboardTrigger(DIK_5))
-	{
-		new Copyright;
-	}
-	if (GetKeyboardTrigger(DIK_6))
-	{
-		Object *pTemp = Object::GetObjectPointer(Object::COPYRIGHT);
-		if (pTemp != NULL)
-		{
-			pTemp->Release();
-		}
-	}
-	if (GetKeyboardTrigger(DIK_7))
-	{
-		new AirWaterFream;
-	}
-	if (GetKeyboardTrigger(DIK_8))
-	{
-		Object *pTemp = Object::GetObjectPointer(Object::FRAME);
-		if (pTemp != NULL)
-		{
-			pTemp->Release();
-		}
-	}
+	//if (GetKeyboardTrigger(DIK_5))
+	//{
+	//	new Copyright;
+	//}
+	//if (GetKeyboardTrigger(DIK_6))
+	//{
+	//	Object *pTemp = Object::GetObjectPointer(Object::COPYRIGHT);
+	//	if (pTemp != NULL)
+	//	{
+	//		pTemp->Release();
+	//	}
+	//}
+	//if (GetKeyboardTrigger(DIK_7))
+	//{
+	//	new AirWaterFream;
+	//}
+	//if (GetKeyboardTrigger(DIK_8))
+	//{
+	//	Object *pTemp = Object::GetObjectPointer(Object::FRAME);
+	//	if (pTemp != NULL)
+	//	{
+	//		pTemp->Release();
+	//	}
+	//}
 #endif
 }
 
@@ -79,7 +79,7 @@ void TitleScene::Update(void)
 //=============================================================================
 void TitleScene::Draw(void)
 {
-	Object::DrawAll();
+	ObjectManager::DrawAll();
 }
 
 //=============================================================================
@@ -89,15 +89,18 @@ TitleScene::TitleScene(void)
 {
 	//new Copyright;
 	//new AirWaterFream;
-	new Player;
-	new Skydome;
-	new Cube;
+	ObjectManager::CreateObject<Player>();
+	ObjectManager::CreateObject<Skydome>();
+	ObjectManager::CreateObject<Cube>();
+	//new Player;
+	//new Skydome;
+	//new Cube;
 	//new Stencil;
 
 
-	// 指定オブジェクト取得テスト
-	Object *pTest1 = Object::GetObjectPointer(Object::PLAYER);
-	Object *pTest2 = Object::GetObjectPointer(Object::COPYRIGHT);
+	//// 指定オブジェクト取得テスト
+	//Object *pTest1 = Object::GetObjectPointer(Object::PLAYER);
+	//Object *pTest2 = Object::GetObjectPointer(Object::COPYRIGHT);
 }
 
 //=============================================================================
@@ -105,7 +108,7 @@ TitleScene::TitleScene(void)
 //=============================================================================
 TitleScene::~TitleScene(void)
 {
-	Object::ReleaseAll();
+	ObjectManager::ReleaseAll();
 }
 
 //=============================================================================

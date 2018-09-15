@@ -27,6 +27,7 @@ class CXTexture
 {
 private:
 	LPDIRECT3DTEXTURE9	m_pD3DTexture;		// テクスチャへのポインタ
+	LPDIRECT3DTEXTURE9	m_pD3DTexture2;		// テクスチャへのポインタ
 	VERTEX_2D	m_VertexWk[NUM_VERTEX];		// 2D頂点情報
 
 	typedef struct XTextureData

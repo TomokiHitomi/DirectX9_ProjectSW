@@ -25,7 +25,7 @@
 //*****************************************************************************
 
 // オブジェクト用
-class Object
+class ObjectManager
 {
 public:
 	// リスト内優先順位
@@ -56,18 +56,17 @@ public:
 		ObjectRootMax
 	};
 private:
-
 	static int		nObjectCount;					// 全オブジェクト数のカウンタ
-	static Object	*s_pRoot[ObjectRootMax];		// リストの更新ルートポインタ
-	Object			*m_pPrev[ObjectRootMax];		// リストの前ポインタ
-	Object			*m_pNext[ObjectRootMax];		// リストの次ポインタ
+	static ObjectManager	*s_pRoot[ObjectRootMax];		// リストの更新ルートポインタ
+	ObjectManager			*m_pPrev[ObjectRootMax];		// リストの前ポインタ
+	ObjectManager			*m_pNext[ObjectRootMax];		// リストの次ポインタ
 	Priority		m_ePriority[ObjectRootMax];		// 優先順位（サブ）
 	ObjectID		eObjectId;						// オブジェクト識別用ID
 public:
 	// コンストラクタ（初期化処理）
-	Object();
+	ObjectManager();
 	// デストラクタ（終了処理）
-	virtual ~Object();
+	virtual ~ObjectManager();
 
 	// 更新処理
 	virtual void Update(void) { ; }
@@ -91,15 +90,13 @@ public:
 	static void ReleaseAll(void);
 
 	// ルートポインタの取得処理
-	static Object *GetObjectRoot(ObjectRoot eObjRoot) { return s_pRoot[eObjRoot]; }
+	static ObjectManager *GetObjectRoot(ObjectRoot eObjRoot) { return s_pRoot[eObjRoot]; }
 	// ルートポインタのアドレス取得処理
-	static Object **GetObjectRootAdr(ObjectRoot);
+	static ObjectManager **GetObjectRootAdr(ObjectRoot);
 
 	// ネクストポインタの取得処理
-	Object *GetObjectNext(ObjectRoot eObjRoot);
+	ObjectManager *GetObjectNext(ObjectRoot eObjRoot);
 
-	// オブジェクトのポインタ取得処理
-	static Object *GetObjectPointer(ObjectID eObjId);
 
 	// オブジェクトID設定処理
 	void SetObjectId(ObjectID eObjId) { eObjectId = eObjId; }
@@ -110,6 +107,31 @@ public:
 	void SetPriority(ObjectRoot eObjRoot, Priority ePriority) { m_ePriority[eObjRoot] = ePriority; }
 	// プライオリティ取得処理
 	Priority GetPriority(ObjectRoot eObjRoot) { return (m_ePriority[eObjRoot]); }
+
+	// オブジェクトのポインタ取得処理
+	template <typename Type>
+	static Type *GetObjectPointer(ObjectID eObjId)
+	{
+		ObjectManager *pList = GetObjectRoot(UpdateRoot);
+
+		while (pList != NULL)
+		{
+			if (eObjId == pList->GetObjectId())
+			{
+				// 対象ポインタを指定した型でダウンキャストして返す
+				return dynamic_cast<Type*>(pList);
+			}
+			pList = pList->GetObjectNext(UpdateRoot);
+		}
+		return NULL;
+	}
+
+	// オブジェクトの作成処理
+	template <typename Type>
+	static void CreateObject(void)
+	{
+		new Type;
+	}
 };
 
 //*****************************************************************************

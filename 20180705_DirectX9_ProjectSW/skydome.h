@@ -34,7 +34,7 @@
 // クラス定義
 //*****************************************************************************
 
-class Skydome : public Object
+class Skydome : public ObjectManager
 {
 private:
 	CXModel			*m_CXModel;			// モデル格納用

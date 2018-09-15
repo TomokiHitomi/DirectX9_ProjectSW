@@ -133,7 +133,6 @@ private:
 public:
 	//ボーンのマトリックス取得( ボーンの名前 )
 	D3DXMATRIX GetBoneMatrix(LPSTR _BoneName);
-	D3DXMATRIX GetBoneMatrixOffset(LPSTR _BoneName, D3DXMATRIX* Offset);
 	//ボーンのマトリックスポインタ取得( ボーンの名前 )
 	D3DXMATRIX* GetpBoneMatrix(LPSTR _BoneName);
 

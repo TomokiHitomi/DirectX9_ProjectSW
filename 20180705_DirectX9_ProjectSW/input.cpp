@@ -69,7 +69,25 @@ static LPDIRECTINPUTDEVICE8	pGamePad[GAMEPADMAX] = { NULL,NULL,NULL,NULL };// パ
 
 static DWORD	padState[GAMEPADMAX];	// パッド情報（複数対応）
 static DWORD	padTrigger[GAMEPADMAX];
+static DWORD	padRelease[GAMEPADMAX];
+
 static int		padCount = 0;			// 検出したパッドの数
+
+float			padlX;
+float			padlY;
+LONG			padlRx;
+float			padlRy;
+float			padlZ;
+float			padlRz;
+D3DXVECTOR3		g_vecGyro;
+DIDEVCAPS		g_diDevCaps;
+
+// ジャイロテスト用
+LONG			lGyroX = 0, lGyroY = 0, lGyroZ = 0;
+float			fGyroX = 0.0f, fGyroY = 0.0f, fGyroZ = 0.0f;
+float			fPreX = 0.0f, fPreY = 0.0f, fPreZ = 0.0f;
+
+int				g_nJoyconSlider;
 
 /* XInput */
 static XINPUT_STATE		g_xState[GAMEPADMAX_XINPUT];
@@ -80,6 +98,11 @@ static DWORD			g_dwPadTrigger[GAMEPADMAX_XINPUT];
 static DWORD			g_dwPadRelease[GAMEPADMAX_XINPUT];
 
 static int				g_nPadCountX = 0;			// 検出したパッドの数
+
+													// デバッグ用
+#ifdef _DEBUG
+ bool					g_bDebug;					// デバッグフォント表示フラグ
+#endif
 
 
 //=============================================================================
@@ -140,6 +163,12 @@ void UninitInput(void)
 //=============================================================================
 void UpdateInput(void)
 {
+#ifdef _DEBUG
+	PrintDebugProc("【INPUT】\n");
+	PrintDebugProc("Ｃキー：パッド状態表示\n");
+	PrintDebugProc("\n");
+#endif
+
 	// キーボードの更新
 	UpdateKeyboard();
 
@@ -151,6 +180,12 @@ void UpdateInput(void)
 
 	// XInputの初期化
 	UpdateXinput();
+
+	// デバッグ情報の表示非表示
+	if (GetKeyboardTrigger(DIK_C))
+	{
+		g_bDebug = g_bDebug ? false : true;
+	}
 
 #ifdef _DEBUG
 	//PrintDebugProc("【 INPUT 】\n");
@@ -497,6 +532,31 @@ HRESULT InitializePad(void)			// パッド初期化
 		// Y軸の範囲を設定
 		diprg.diph.dwObj = DIJOFS_Y;
 		pGamePad[i]->SetProperty(DIPROP_RANGE, &diprg.diph);
+		// Z軸の範囲を設定
+		diprg.diph.dwObj = DIJOFS_Z;
+		pGamePad[i]->SetProperty(DIPROP_RANGE, &diprg.diph);
+
+		// RX軸の範囲を設定
+		diprg.diph.dwObj = DIJOFS_RX;
+		pGamePad[i]->SetProperty(DIPROP_RANGE, &diprg.diph);
+		// RY軸の範囲を設定
+		diprg.diph.dwObj = DIJOFS_RY;
+		pGamePad[i]->SetProperty(DIPROP_RANGE, &diprg.diph);
+
+		// GYRO用のRANGEを設定
+		diprg.lMin = RANGE_MIN_GYRO;
+		diprg.lMax = RANGE_MAX_GYRO;
+		// RZ軸の範囲を設定（Z回転）
+		diprg.diph.dwObj = DIJOFS_RZ;
+		pGamePad[i]->SetProperty(DIPROP_RANGE, &diprg.diph);
+		// SLIDER(0)の範囲を設定
+		diprg.diph.dwObj = DIJOFS_SLIDER(0);
+		pGamePad[i]->SetProperty(DIPROP_RANGE, &diprg.diph);
+		// SLIDER(1)の範囲を設定
+		diprg.diph.dwObj = DIJOFS_SLIDER(1);
+		pGamePad[i]->SetProperty(DIPROP_RANGE, &diprg.diph);
+
+
 
 		// 各軸ごとに、無効のゾーン値を設定する。
 		// 無効ゾーンとは、中央からの微少なジョイスティックの動きを無視する範囲のこと。
@@ -512,6 +572,28 @@ HRESULT InitializePad(void)			// パッド初期化
 		//Y軸の無効ゾーンを設定
 		dipdw.diph.dwObj = DIJOFS_Y;
 		pGamePad[i]->SetProperty(DIPROP_DEADZONE, &dipdw.diph);
+		// Z軸の無効ゾーンを設定
+		dipdw.diph.dwObj = DIJOFS_Z;
+		pGamePad[i]->SetProperty(DIPROP_DEADZONE, &dipdw.diph);
+
+		// RX軸の無効ゾーンを設定
+		dipdw.diph.dwObj = DIJOFS_RX;
+		pGamePad[i]->SetProperty(DIPROP_DEADZONE, &dipdw.diph);
+		// RY軸の無効ゾーンを設定
+		dipdw.diph.dwObj = DIJOFS_RY;
+		pGamePad[i]->SetProperty(DIPROP_DEADZONE, &dipdw.diph);
+
+		//// GYRO用のRANGEを設定
+		//dipdw.dwData = DEADZONE_GYRO;
+		//// RZ軸の無効ゾーンを設定（Z回転）
+		//dipdw.diph.dwObj = DIJOFS_RZ;
+		//pGamePad[i]->SetProperty(DIPROP_DEADZONE, &dipdw.diph);
+		//// SLIDER(0)の無効ゾーンを設定
+		//dipdw.diph.dwObj = DIJOFS_SLIDER(0);
+		//pGamePad[i]->SetProperty(DIPROP_DEADZONE, &dipdw.diph);
+		//// SLIDER(1)の無効ゾーンを設定
+		//dipdw.diph.dwObj = DIJOFS_SLIDER(1);
+		//pGamePad[i]->SetProperty(DIPROP_DEADZONE, &dipdw.diph);
 
 		//ジョイスティック入力制御開始
 		pGamePad[i]->Acquire();
@@ -536,6 +618,8 @@ void UninitPad(void)
 //------------------------------------------ 更新
 void UpdatePad(void)
 {
+
+
 	HRESULT			result;
 	DIJOYSTATE2		dijs;
 	int				i;
@@ -563,32 +647,23 @@ void UpdatePad(void)
 		// ３２の各ビットに意味を持たせ、ボタン押下に応じてビットをオンにする
 
 		//* 方向キー上
-		if (dijs.rgdwPOV[0] == 0)		padState[i] |= BUTTON_POV_UP;
+		if (dijs.rgdwPOV[0] == 0)		padState[i] |= BUTTON_UP;
 		//* 方向キー下
-		if (dijs.rgdwPOV[0] == 18000)	padState[i] |= BUTTON_POV_DOWN;
+		if (dijs.rgdwPOV[0] == 18000)	padState[i] |= BUTTON_DOWN;
 		//* 方向キー左
-		if (dijs.rgdwPOV[0] == 27000)	padState[i] |= BUTTON_POV_LEFT;
+		if (dijs.rgdwPOV[0] == 27000)	padState[i] |= BUTTON_LEFT;
 		//* 方向キー右
-		if (dijs.rgdwPOV[0] == 9000)	padState[i] |= BUTTON_POV_RIGHT;
+		if (dijs.rgdwPOV[0] == 9000)	padState[i] |= BUTTON_RIGHT;
 
 		//* 方向キー右上
-		if (dijs.rgdwPOV[0] == 4500)	padState[i] |= BUTTON_POV_RIGHT;
+		if (dijs.rgdwPOV[0] == 4500)	padState[i] |= BUTTON_UP, padState[i] |= BUTTON_RIGHT;
 		//* 方向キー右下
-		if (dijs.rgdwPOV[0] == 13500)	padState[i] |= BUTTON_POV_RIGHT;
+		if (dijs.rgdwPOV[0] == 13500)	padState[i] |= BUTTON_DOWN, padState[i] |= BUTTON_RIGHT;
 		//* 方向キー左下
-		if (dijs.rgdwPOV[0] == 22500)	padState[i] |= BUTTON_POV_LEFT;
+		if (dijs.rgdwPOV[0] == 22500)	padState[i] |= BUTTON_DOWN, padState[i] |= BUTTON_LEFT;
 		//* 方向キー左上
-		if (dijs.rgdwPOV[0] == 31500)	padState[i] |= BUTTON_POV_LEFT;
+		if (dijs.rgdwPOV[0] == 31500)	padState[i] |= BUTTON_UP, padState[i] |= BUTTON_LEFT;
 
-
-		//* y-axis (forward)
-		if (dijs.lY < 0)				padState[i] |= BUTTON_UP;
-		//* y-axis (backward)
-		if (dijs.lY > 0)				padState[i] |= BUTTON_DOWN;
-		//* x-axis (left)
-		if (dijs.lX < 0)				padState[i] |= BUTTON_LEFT;
-		//* x-axis (right)
-		if (dijs.lX > 0)				padState[i] |= BUTTON_RIGHT;
 		//* Ａボタン
 		if (dijs.rgbButtons[0] & 0x80)	padState[i] |= BUTTON_A;
 		//* Ｂボタン
@@ -597,52 +672,168 @@ void UpdatePad(void)
 		if (dijs.rgbButtons[2] & 0x80)	padState[i] |= BUTTON_C;
 		//* Ｘボタン
 		if (dijs.rgbButtons[3] & 0x80)	padState[i] |= BUTTON_X;
-		//* Ｙボタン
-		if (dijs.rgbButtons[4] & 0x80)	padState[i] |= BUTTON_Y;
-		//* Ｚボタン
-		if (dijs.rgbButtons[5] & 0x80)	padState[i] |= BUTTON_Z;
+		////* Ｙボタン
+		//if (dijs.rgbButtons[4] & 0x80)	padState[i] |= BUTTON_Y;
+		////* Ｚボタン
+		//if (dijs.rgbButtons[5] & 0x80)	padState[i] |= BUTTON_Z;
 		//* Ｌボタン
 		if (dijs.rgbButtons[6] & 0x80)	padState[i] |= BUTTON_L;
 		//* Ｒボタン
 		if (dijs.rgbButtons[7] & 0x80)	padState[i] |= BUTTON_R;
+
+		//* キャプチャーボタン[13]
+		if (dijs.rgbButtons[13] & 0x80)	padState[i] |= BUTTON_CAP;
+		//* Homeボタン[28]
+		if (dijs.rgbButtons[28] & 0x80)	padState[i] |= BUTTON_HOME;
 		//* ＳＴＡＲＴボタン
-		if (dijs.rgbButtons[8] & 0x80)	padState[i] |= BUTTON_START;
+		if (dijs.rgbButtons[9] & 0x80)	padState[i] |= BUTTON_START;
 		//* Ｍボタン
-		if (dijs.rgbButtons[9] & 0x80)	padState[i] |= BUTTON_M;
+		if (dijs.rgbButtons[8] & 0x80)	padState[i] |= BUTTON_MINUS;
+
+		//*
+		if (dijs.rgbButtons[16] & 0x80)	padState[i] |= R_BUTTON_Y;
+		//*
+		if (dijs.rgbButtons[17] & 0x80)	padState[i] |= R_BUTTON_X;
+		//*
+		if (dijs.rgbButtons[18] & 0x80)	padState[i] |= R_BUTTON_B;
+		//*
+		if (dijs.rgbButtons[19] & 0x80)	padState[i] |= R_BUTTON_A;
+		//*
+		if (dijs.rgbButtons[22] & 0x80)	padState[i] |= R_BUTTON_R;
+		//*
+		if (dijs.rgbButtons[23] & 0x80)	padState[i] |= R_BUTTON_ZR;
+		//*
+		if (dijs.rgbButtons[25] & 0x80)	padState[i] |= R_BUTTON_PLUS;
+		//*
+		if (dijs.rgbButtons[21] & 0x80)	padState[i] |= R_BUTTON_LEFT;
+
+		//* y-axis (forward)
+		if (dijs.lY < 0)				padState[i] |= LSTICK_UP;
+		//* y-axis (backward)
+		if (dijs.lY > 0)				padState[i] |= LSTICK_DOWN;
+		//* x-axis (left)
+		if (dijs.lX < 0)				padState[i] |= LSTICK_LEFT;
+		//* x-axis (right)
+		if (dijs.lX > 0)				padState[i] |= LSTICK_RIGHT;
+
+
+		//* 右スティック上
+		if (dijs.lRy < 0)				padState[i] |= RSTICK_UP;
+		//* 右スティック下
+		if (dijs.lRy > 0)				padState[i] |= RSTICK_DOWN;
+		//* 右スティック左
+		if (dijs.lRx < 0)				padState[i] |= RSTICK_LEFT;
+		//* 右スティック右
+		if (dijs.lRx > 0)				padState[i] |= RSTICK_RIGHT;
+
+
+		////* 右スティック上
+		//if (dijs.lRz < 0x8000 - RSTICK_MARGIN)	padState[i] |= RSTICK_UP;
+		////* 右スティック下
+		//if (dijs.lRz > 0x8000 + RSTICK_MARGIN)	padState[i] |= RSTICK_DOWN;
+		////* 右スティック左
+		//if (dijs.lZ < 0x8000 - RSTICK_MARGIN)	padState[i] |= RSTICK_LEFT;
+		////* 右スティック右
+		//if (dijs.lZ > 0x8000 + RSTICK_MARGIN)	padState[i] |= RSTICK_RIGHT;
+
+		//* 左スティックボタン
+		if (dijs.rgbButtons[10] & 0x80)	padState[i] |= LSTICK_BUTTON;
+		//* 右スティックボタン
+		if (dijs.rgbButtons[11] & 0x80)	padState[i] |= RSTICK_BUTTON;
+
 
 		// Trigger設定
 		padTrigger[i] = ((lastPadState ^ padState[i])	// 前回と違っていて
 			& padState[i]);					// しかも今ONのやつ
+											// Release設定
+		padRelease[i] = ((lastPadState ^ padState[i])	// 前回と違っていて
+			& ~padState[i]);					// しかも今OFFのやつ
 
-//#ifdef _DEBUG
-//			PrintDebugProc("【PAD】\n");
-//			PrintDebugProc("LStick[X:%l  Y:%l  Z:%l]  RStick[X:%l  Y:%l  Z:%l]\n",
-//				dijs.lX, dijs.lY, dijs.lZ, dijs.lRx, dijs.lRy, dijs.lRz);
-//			PrintDebugProc("POV[UP:%d  RIGHT:%d  DOWN:%d  LEFT:%d]\n",
-//				dijs.rgdwPOV[0], dijs.rgdwPOV[1], dijs.rgdwPOV[2], dijs.rgdwPOV[3]);
-//			PrintDebugProc("lV[X:%l  Y:%l  Z:%l]  lVR[X:%l  Y:%l  Z:%l]\n",
-//				dijs.lVX, dijs.lVY, dijs.lVZ, dijs.lVRx, dijs.lVRy, dijs.lVRz);
-//			PrintDebugProc("lA[X:%l  Y:%l  Z:%l]  lAR[X:%l  Y:%l  Z:%l]\n",
-//				dijs.lAX, dijs.lAY, dijs.lAZ, dijs.lARx, dijs.lARy, dijs.lARz);
-//			PrintDebugProc("lF[X:%l  Y:%l  Z:%l]  lFR[X:%l  Y:%l  Z:%l]\n",
-//				dijs.lFX, dijs.lFY, dijs.lFZ, dijs.lFRx, dijs.lFRy, dijs.lFRz);
-//			PrintDebugProc("rglSlider[0:%l  1:%l]  rglVSlider[0:%l  1:%l]\n",
-//				dijs.rglSlider[0], dijs.rglSlider[1], dijs.rglVSlider[0], dijs.rglVSlider[1]);
-//			PrintDebugProc("rglASlider[0:%l  1:%l]  rglFSlider[0:%l  1:%l]\n",
-//				dijs.rglASlider[0], dijs.rglASlider[1], dijs.rglFSlider[0], dijs.rglFSlider[1]);
-//			PrintDebugProc("rgbButtons\n");
-//			for (int i = 0; i < 128; i++)
-//			{
-//				PrintDebugProc("%d", dijs.rgbButtons[i]);
-//				if (i % 32 == 0 && i != 0)
-//				{
-//					PrintDebugProc("\n");
-//				}
-//			}
-//			//PrintDebugProc("[%f] [%f]\n", (float)padlZ, (float)padlRz);
-//			PrintDebugProc("\n");
-//#endif
+		if (i == 0)
+		{
+			// 右スティックの傾き量を格納
+			padlRx = dijs.lRx;
+			padlRy = dijs.lRy;
 
+			// 左スティックの傾き量を格納
+			padlZ = dijs.lZ;
+			padlRz = dijs.lRz;
+
+			// ジャイロ情報を格納
+			g_vecGyro = D3DXVECTOR3((float)dijs.rglSlider[0], (float)dijs.rglSlider[1], dijs.lRz);
+		}
+
+
+#ifdef _DEBUG
+		if (g_bDebug)
+		{
+			PrintDebugProc("【GAME PAD】\n");
+			PrintDebugProc("LStick[X:%l  Y:%l  Z:%l]  RStick[X:%l  Y:%l  Z:%l]\n",
+				dijs.lX, dijs.lY, dijs.lZ, dijs.lRx, dijs.lRy, dijs.lRz);
+			PrintDebugProc("POV[UP:%d  RIGHT:%d  DOWN:%d  LEFT:%d]\n",
+				dijs.rgdwPOV[0], dijs.rgdwPOV[1], dijs.rgdwPOV[2], dijs.rgdwPOV[3]);
+			PrintDebugProc("lV[X:%l  Y:%l  Z:%l]  lVR[X:%l  Y:%l  Z:%l]\n",
+				dijs.lVX, dijs.lVY, dijs.lVZ, dijs.lVRx, dijs.lVRy, dijs.lVRz);
+			PrintDebugProc("lA[X:%l  Y:%l  Z:%l]  lAR[X:%l  Y:%l  Z:%l]\n",
+				dijs.lAX, dijs.lAY, dijs.lAZ, dijs.lARx, dijs.lARy, dijs.lARz);
+			PrintDebugProc("lF[X:%l  Y:%l  Z:%l]  lFR[X:%l  Y:%l  Z:%l]\n",
+				dijs.lFX, dijs.lFY, dijs.lFZ, dijs.lFRx, dijs.lFRy, dijs.lFRz);
+			PrintDebugProc("rglSlider[0:%l  1:%l]  rglVSlider[0:%l  1:%l]\n",
+				dijs.rglSlider[0], dijs.rglSlider[1], dijs.rglVSlider[0], dijs.rglVSlider[1]);
+			PrintDebugProc("rglASlider[0:%l  1:%l]  rglFSlider[0:%l  1:%l]\n",
+				dijs.rglASlider[0], dijs.rglASlider[1], dijs.rglFSlider[0], dijs.rglFSlider[1]);
+			PrintDebugProc("rgbButtons\n");
+
+			if (GetKeyboardTrigger(DIK_R))
+			{
+				lGyroX = 0;
+				lGyroY = 0;
+				lGyroZ = 0;
+				fGyroX = 0.0f;
+				fGyroY = 0.0f;
+				fGyroZ = 0.0f;
+			}
+			lGyroX += dijs.lRz;
+			lGyroY += dijs.rglSlider[1];
+			lGyroZ += dijs.rglSlider[0];
+
+			float fDegree;
+
+			fDegree = (fPreX + dijs.lRz) * 15 / 2;
+			fGyroX += fDegree * 0.0174533f;
+
+			fDegree = (fPreY + dijs.rglSlider[1]) * 15 / 2;
+			fGyroY += fDegree * 0.0174533f;
+
+			fDegree = (fPreZ + dijs.rglSlider[0]) * 15 / 2;
+			fGyroZ += fDegree * 0.0174533f;
+
+
+			fPreX = dijs.lRz;
+			fPreY = dijs.rglSlider[1];
+			fPreZ = dijs.rglSlider[0];
+
+
+			PrintDebugProc("lGyro[X:%l  Y:%l  Z:%l]\n",
+				lGyroX, lGyroY, lGyroZ);
+
+			PrintDebugProc("fGyro[X:%f  Y:%f  Z:%f]\n",
+				fGyroX, fGyroY, fGyroZ);
+
+
+
+			for (int i = 0; i < 128; i++)
+			{
+				PrintDebugProc("%d", dijs.rgbButtons[i]);
+				if (i % 32 == 0 && i != 0)
+				{
+					PrintDebugProc("\n");
+				}
+			}
+			PrintDebugProc("[%f] [%f]\n", (float)padlZ, (float)padlRz);
+			PrintDebugProc("\n");
+		}
+#endif
 	}
 
 }
@@ -656,6 +847,12 @@ BOOL IsButtonTriggered(int padNo, DWORD button)
 {
 	return (button & padTrigger[padNo]);
 }
+
+BOOL IsButtonReleased(int padNo, DWORD button)
+{
+	return (button & padRelease[padNo]);
+}
+
 
 //=============================================================================
 // XInput初期化処理
@@ -699,18 +896,6 @@ void UninitXinput(void)
 //=============================================================================
 void UpdateXinput(void)
 {
-#ifdef _DEBUG
-	PrintDebugProc("【XINPUT】\n");
-	//PrintDebugProc("左スティック押込:バイブ増\n");
-	//PrintDebugProc("右スティック押込:バイブ減\n");
-	PrintDebugProc("Ｃキー：パッド状態表示\n");
-	PrintDebugProc("\n");
-	static bool bDebug;
-	if (GetKeyboardTrigger(DIK_C))
-	{
-		bDebug = bDebug ? false : true;
-	}
-#endif
 	XINPUT_STATE xState;
 
 	for (DWORD i = 0; i < g_nPadCountX; i++)
@@ -772,9 +957,12 @@ void UpdateXinput(void)
 				max(g_xVibration[i].wRightMotorSpeed - XINPUT_VIBRATION_DEBUG, 0);
 		}
 
-		if (bDebug)
+		if (g_bDebug)
 		{
 			// デバッグフォント表示
+			PrintDebugProc("【XINPUT】\n");
+			//PrintDebugProc("左スティック押込:バイブ増\n");
+			//PrintDebugProc("右スティック押込:バイブ減\n");
 			PrintDebugProc("PAD       [%d]   PacketNum[%d]\n", i, xState.dwPacketNumber);
 			PrintDebugProc("THUMB     [LX:%d LY:%d RX:%d RY:%d]\n",
 				xState.Gamepad.sThumbLX, xState.Gamepad.sThumbLY,
@@ -915,3 +1103,54 @@ bool InputPress(INPUT_CHECK eInput)
 	}
 	return false;
 }
+
+
+float GetButtonlZ(int padNo)
+{
+	if (padlZ < 0.0f) padlZ *= -1.0f;
+	padlZ = padlZ / RANGE_MAX;
+#ifdef _DEBUG
+	PrintDebugProc("padlZ[%f]\n", padlZ);
+#endif
+	return (padlZ);
+}
+
+float GetButtonlRz(int padNo)
+{
+	if (padlRz < 0.0f) padlRz *= -1.0f;
+	//padlRz = padlRz / RANGE_MAX;
+#ifdef _DEBUG
+	PrintDebugProc("padlRz[%f]\n", padlRz);
+#endif
+	return (padlRz);
+}
+
+//=============================================================================
+// スティック情報取得関数
+//=============================================================================
+float GetStick(int padNo, int nStick)
+{
+	float fStick = 0.0f;
+	switch (nStick)
+	{
+	case PAD_STICK_R_X:
+		fStick = (float)padlRx / RANGE_MAX;
+		break;
+	case PAD_STICK_R_Y:
+		fStick = (float)padlRy / RANGE_MAX;
+		break;
+	}
+	return (fStick);
+}
+
+//=============================================================================
+// ジャイロ情報取得関数
+//=============================================================================
+D3DXVECTOR3 GetGyro(void)
+{
+	float fSlider = 0.0f;
+	D3DXVECTOR3 vecGyro;
+	vecGyro = g_vecGyro * PAD_SLIDER_SPEED * g_nJoyconSlider;
+	return (vecGyro);
+}
+

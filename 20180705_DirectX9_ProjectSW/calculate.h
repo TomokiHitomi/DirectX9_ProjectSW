@@ -41,7 +41,7 @@ enum
 // プロトタイプ宣言
 //*****************************************************************************
 
-void WorldConvert(D3DXMATRIX*, D3DXVECTOR3, D3DXVECTOR3, D3DXVECTOR3);
+void WorldConvert(D3DXMATRIX *pOut, D3DXVECTOR3 pos, D3DXVECTOR3 rot, D3DXVECTOR3 scl);
 void WorldConvertAxis(D3DXMATRIX *world, D3DXVECTOR3 pos,
 	D3DXVECTOR3 vLook, D3DXVECTOR3 vUp, D3DXVECTOR3 scl);
 void MatrixRotationVecAndUp(D3DXMATRIX *mtxOut, D3DXVECTOR3 vLook, D3DXVECTOR3 vUp);
@@ -55,5 +55,6 @@ D3DXCOLOR SetColorPallet(int nColor);
 void SetShuffle(int *nShuffle, int nSize);
 D3DXVECTOR3 Calculate_Vec_2pos(D3DXVECTOR3 pos1, D3DXVECTOR3 pos2);
 float Calculate_Atan2XZ(D3DXVECTOR3 pos1, D3DXVECTOR3 pos2);
+bool D3DXMatrixNormalize(D3DXMATRIX *pOut, D3DXMATRIX *pIn);
 
 #endif

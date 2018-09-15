@@ -57,7 +57,7 @@ typedef struct
 // クラス定義
 //*****************************************************************************
 
-class Copyright : public Object
+class Copyright : public ObjectManager
 {
 public:
 	// AWF管理用の列挙型

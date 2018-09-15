@@ -99,6 +99,12 @@
     <ClCompile Include="stencil.cpp">
       <Filter>ソース ファイル\Object\Test</Filter>
     </ClCompile>
+    <ClCompile Include="sword.cpp">
+      <Filter>ソース ファイル\Object</Filter>
+    </ClCompile>
+    <ClCompile Include="collision.cpp">
+      <Filter>ソース ファイル\System</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -169,6 +175,12 @@
     </ClInclude>
     <ClInclude Include="stencil.h">
       <Filter>ソース ファイル\Object\Test</Filter>
+    </ClInclude>
+    <ClInclude Include="sword.h">
+      <Filter>ソース ファイル\Object</Filter>
+    </ClInclude>
+    <ClInclude Include="collision.h">
+      <Filter>ソース ファイル\System</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
