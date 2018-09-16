@@ -79,7 +79,7 @@ Player::Player(void)
 	WorldConvert(&m_mtxWorldWing, pos, rot, scl);
 
 	// ƒ\[ƒh‚Ì‰Šú‰»
-	//m_cSword = new Sword;
+	m_cSword = new Sword;
 
 	D3DXMATRIX mtxTranslate;
 

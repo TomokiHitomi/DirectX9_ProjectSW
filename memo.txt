@@ -1,0 +1,22 @@
+プロパティ設定
+
+構成プロパティ
+
+全般→出力ディレクトリ
+$(SolutionDir)\$(ProjectName)\bin\$(Platform)\$(Configuration)\
+
+VC++ ディレクトリ→インクルードディレクトリ（DirectXSDK標準インストール時）
+C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Include;$(SolutionDir)\$(ProjectName)\include;$(IncludePath)
+
+VC++ ディレクトリ→ライブラリディレクトリ（DirectXSDK標準インストール時）
+C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\x86;$(SolutionDir)\$(ProjectName)\libs;$(LibraryPath)
+
+C++→全般→追加のインクルードディレクトリ
+$(SolutionDir)include
+
+リンカー→全般→追加のライブラリディレクトリ
+$(SolutionDir)lib
+
+リンカー→入力→追加の依存ファイル
+hidapi.lib;
+※上記を追加
