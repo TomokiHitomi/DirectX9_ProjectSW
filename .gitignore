@@ -5,6 +5,9 @@
 *.suo
 *.obj
 *.db
+*.exe
+*.pdb
+*.ilk
 
 # 特定のファイルを無視する場合は先頭に/を付ける
 /Thumbs.db

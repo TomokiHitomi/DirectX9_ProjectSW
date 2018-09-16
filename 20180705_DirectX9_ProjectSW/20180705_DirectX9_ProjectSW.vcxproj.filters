@@ -31,6 +31,12 @@
     <Filter Include="ソース ファイル\ModelAndTex">
       <UniqueIdentifier>{3d24d3d2-0796-4ec6-a1e9-b1fd3c37e2a4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\Joycon">
+      <UniqueIdentifier>{29de778b-c6b3-4638-a573-c9809db0687c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Include">
+      <UniqueIdentifier>{a4857277-3f6d-4afc-98fb-1ca1a23058a5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -104,6 +110,9 @@
     </ClCompile>
     <ClCompile Include="collision.cpp">
       <Filter>ソース ファイル\System</Filter>
+    </ClCompile>
+    <ClCompile Include="joycon.cpp">
+      <Filter>ソース ファイル\Joycon</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -181,6 +190,36 @@
     </ClInclude>
     <ClInclude Include="collision.h">
       <Filter>ソース ファイル\System</Filter>
+    </ClInclude>
+    <ClInclude Include="joycon.h">
+      <Filter>ソース ファイル\Joycon</Filter>
+    </ClInclude>
+    <ClInclude Include="include\hidapi.h">
+      <Filter>ソース ファイル\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Joycon.hpp">
+      <Filter>ソース ファイル\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\MouseController.hpp">
+      <Filter>ソース ファイル\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\MyApp.h">
+      <Filter>ソース ファイル\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\packet.h">
+      <Filter>ソース ファイル\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\public.h">
+      <Filter>ソース ファイル\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\stdafx.h">
+      <Filter>ソース ファイル\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\tools.hpp">
+      <Filter>ソース ファイル\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\vjoyinterface.h">
+      <Filter>ソース ファイル\Include</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

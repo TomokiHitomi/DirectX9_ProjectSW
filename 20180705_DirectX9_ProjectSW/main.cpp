@@ -9,6 +9,7 @@
 /* System */
 #include "scene.h"
 #include "input.h"
+#include "joycon.h"
 
 /* Debug */
 #ifdef _DEBUG
@@ -297,6 +298,8 @@ HRESULT Init(HINSTANCE hInstance, HWND hWnd, BOOL bWindow)
 	// シーンの初期化処理
 	SceneManager::Init(hInstance, hWnd);
 
+	start();
+
 	return S_OK;
 }
 
@@ -319,6 +322,7 @@ void Uninit(void)
 
 	// シーンの終了処理
 	SceneManager::Uninit();
+	actuallyQuit();
 }
 
 //=============================================================================
@@ -326,6 +330,7 @@ void Uninit(void)
 //=============================================================================
 void Update(void)
 {
+	pollLoop();
 	// 更新処理
 	SceneManager::Update();
 }
