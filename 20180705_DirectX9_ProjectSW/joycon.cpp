@@ -395,15 +395,15 @@ void handle_input(Joycon *jc, uint8_t *packet, int len) {
 			jc->btns.stick_button = (jc->buttons & (1 << 11)) ? 1 : 0;
 			jc->btns.capture = (jc->buttons & (1 << 13)) ? 1 : 0;
 
-#ifdef _DEBUG
-			PrintDebugProc("yJoy-Con Leftz\n");
-
-			PrintDebugProc("U: %d D: %d L: %d R: %d LL: %d ZL: %d SB: %d SL: %d SR: %d M: %d C: %d SX: %f SY: %f GR: %d GP: %d GY: %d\n", \
-								jc->btns.up, jc->btns.down, jc->btns.left, jc->btns.right, jc->btns.l, jc->btns.zl, jc->btns.stick_button, jc->btns.sl, jc->btns.sr, \
-					jc->btns.minus, jc->btns.capture, (jc->stick.CalX + 1), (jc->stick.CalY + 1), (int)jc->gyro.roll, (int)jc->gyro.pitch, (int)jc->gyro.yaw);
-			PrintDebugProc("Accel[X:%f Y:%f Z:%f]\n", jc->accel.x, jc->accel.y, jc->accel.z);
-			PrintDebugProc("Gyro [R:%f P:%f Y:%f]\n", jc->gyro.roll, jc->gyro.pitch, jc->gyro.yaw);
-#endif
+//#ifdef _DEBUG
+//			PrintDebugProc("yJoy-Con Leftz\n");
+//
+//			PrintDebugProc("U: %d D: %d L: %d R: %d LL: %d ZL: %d SB: %d SL: %d SR: %d M: %d C: %d SX: %f SY: %f GR: %d GP: %d GY: %d\n", \
+//								jc->btns.up, jc->btns.down, jc->btns.left, jc->btns.right, jc->btns.l, jc->btns.zl, jc->btns.stick_button, jc->btns.sl, jc->btns.sr, \
+//					jc->btns.minus, jc->btns.capture, (jc->stick.CalX + 1), (jc->stick.CalY + 1), (int)jc->gyro.roll, (int)jc->gyro.pitch, (int)jc->gyro.yaw);
+//			PrintDebugProc("Accel[X:%f Y:%f Z:%f]\n", jc->accel.x, jc->accel.y, jc->accel.z);
+//			PrintDebugProc("Gyro [R:%f P:%f Y:%f]\n", jc->gyro.roll, jc->gyro.pitch, jc->gyro.yaw);
+//#endif
 
 			//if (settings.debugMode) {
 			//	printf("U: %d D: %d L: %d R: %d LL: %d ZL: %d SB: %d SL: %d SR: %d M: %d C: %d SX: %.5f SY: %.5f GR: %06d GP: %06d GY: %06d\n", \
@@ -431,15 +431,15 @@ void handle_input(Joycon *jc, uint8_t *packet, int len) {
 			jc->btns.stick_button = (jc->buttons & (1 << 10)) ? 1 : 0;
 			jc->btns.home = (jc->buttons & (1 << 12)) ? 1 : 0;
 
-#ifdef _DEBUG
-			PrintDebugProc("yJoy-Con Rightz\n");
-
-			PrintDebugProc("A: %d B: %d X: %d Y: %d RR: %d ZR: %d SB: %d SL: %d SR: %d P: %d H: %d SX: %f SY: %f GR: %d GP: %d GY: %d\n", \
-				jc->btns.a, jc->btns.b, jc->btns.x, jc->btns.y, jc->btns.r, jc->btns.zr, jc->btns.stick_button, jc->btns.sl, jc->btns.sr, \
-				jc->btns.plus, jc->btns.home, (jc->stick.CalX + 1), (jc->stick.CalY + 1), (int)jc->gyro.roll, (int)jc->gyro.pitch, (int)jc->gyro.yaw);
-			PrintDebugProc("Accel[X:%f Y:%f Z:%f]\n", jc->accel.x, jc->accel.y, jc->accel.z);
-			PrintDebugProc("Gyro [R:%f P:%f Y:%f]\n", jc->gyro.roll, jc->gyro.pitch, jc->gyro.yaw);
-#endif
+//#ifdef _DEBUG
+//			PrintDebugProc("yJoy-Con Rightz\n");
+//
+//			PrintDebugProc("A: %d B: %d X: %d Y: %d RR: %d ZR: %d SB: %d SL: %d SR: %d P: %d H: %d SX: %f SY: %f GR: %d GP: %d GY: %d\n", \
+//				jc->btns.a, jc->btns.b, jc->btns.x, jc->btns.y, jc->btns.r, jc->btns.zr, jc->btns.stick_button, jc->btns.sl, jc->btns.sr, \
+//				jc->btns.plus, jc->btns.home, (jc->stick.CalX + 1), (jc->stick.CalY + 1), (int)jc->gyro.roll, (int)jc->gyro.pitch, (int)jc->gyro.yaw);
+//			PrintDebugProc("Accel[X:%f Y:%f Z:%f]\n", jc->accel.x, jc->accel.y, jc->accel.z);
+//			PrintDebugProc("Gyro [R:%f P:%f Y:%f]\n", jc->gyro.roll, jc->gyro.pitch, jc->gyro.yaw);
+//#endif
 
 			//if (settings.debugMode) {
 				//printf("A: %d B: %d X: %d Y: %d RR: %d ZR: %d SB: %d SL: %d SR: %d P: %d H: %d SX: %.5f SY: %.5f GR: %06d GP: %06d GY: %06d\n", \
@@ -565,7 +565,6 @@ void pollLoop()
 			//jc->send_command(0x1E, buf, 0);
 			tracker.tPolls[i] = std::chrono::high_resolution_clock::now();
 		}
-
 
 		//hid_read(jc->handle, buf, 0x40);
 		hid_read_timeout(jc->handle, buf, 0x40, 20);
