@@ -7,6 +7,7 @@
 #include "main.h"
 #include "cube.h"
 #include "calculate.h"
+#include "joycon.h"
 
 // デバッグ用
 #ifdef _DEBUG
@@ -81,6 +82,18 @@ void Cube::Draw(void)
 {
 	if (m_tagProp.bUse)
 	{
+		//// joyconテスト
+		//D3DXVECTOR3 vecUp = D3DXVECTOR3(0.0f, 1.0f, 0.0f);
+		//D3DXVECTOR3 vecTemp = GetJoyconAccel(0);
+		//D3DXVec3Normalize(&vecTemp, &vecTemp);
+
+		////WorldConvertAxis(&m_tagProp.mtxWorld, m_tagProp.vPos, vecTemp,
+		////	vecUp, m_tagProp.vScl);
+
+		//PrintDebugProc("Cube [X:%f Y:%f Z:%f]\n",
+		//	vecTemp.x, vecTemp.y, vecTemp.z);
+
+		//m_tagProp.vPos += vecTemp;
 		// ワールド変換
 		WorldConvert(&m_tagProp.mtxWorld,
 			m_tagProp.vPos, m_tagProp.vRot, m_tagProp.vScl);

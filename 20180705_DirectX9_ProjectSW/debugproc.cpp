@@ -170,7 +170,7 @@ void PrintDebugProc(char *fmt,...)
 
 			case 'f':
 				// 可変引数にアクセスしてその変数を取り出す処理
-				sprintf(aWk, "%.3f", va_arg(list, double));		// double型で指定
+				sprintf(aWk, "%.4f", va_arg(list, double));		// double型で指定
 				break;
 
 			case 'l':
@@ -207,3 +207,25 @@ void PrintDebugProc(char *fmt,...)
 #endif
 }
 
+
+
+//=============================================================================
+// デバッグタイマー開始/再開処理
+//=============================================================================
+void Debugtimer::Restart(void)
+{
+	QueryPerformanceFrequency(&m_liFreq);	// 単位を習得
+	QueryPerformanceCounter(&m_liStart);	// 開始時間を取得
+}
+
+//=============================================================================
+// デバッグタイマー終了処理
+//=============================================================================
+double Debugtimer::End(void)
+{
+	LARGE_INTEGER liEnd;
+	QueryPerformanceCounter(&liEnd);		// 終了時間を取得
+
+	// 終了 - 開始 / 単位を計算した値を返す
+	return (double)(liEnd.QuadPart - m_liStart.QuadPart) / m_liFreq.QuadPart;
+}

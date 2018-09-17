@@ -79,9 +79,18 @@ void Skydome::Draw(void)
 {
 	if (m_bUse)
 	{
+		LPDIRECT3DDEVICE9 pDevice = GetDevice();
+
 		// ワールド変換
 		WorldConvert(&m_mtxWorld, m_vPos, m_vRot, m_vScl);
 
+		// ラインティングを無効にする
+		pDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
+
 		m_CXModel->Draw(m_mtxWorld);
+
+		// ラインティングを有効にする
+		pDevice->SetRenderState(D3DRS_LIGHTING, TRUE);
+
 	}
 }

@@ -8,8 +8,8 @@
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
-#include "joycon.hpp"
 #include "joycon.h"
+#include "joycon.hpp"
 
 // glm:
 #define GLM_ENABLE_EXPERIMENTAL
@@ -23,6 +23,7 @@
 // デバッグ用
 #ifdef _DEBUG
 #include "debugproc.h"
+#include "input.h"
 #endif
 
 //*****************************************************************************
@@ -508,12 +509,12 @@ void handle_input(Joycon *jc, uint8_t *packet, int len) {
 	}
 }
 
-void start();
-
-void pollLoop() {
+void pollLoop()
+{
 
 	// poll joycons:
-	for (int i = 0; i < joycons.size(); ++i) {
+	int size = joycons.size();
+	for (int i = 0; i < size; ++i) {
 
 		Joycon *jc = &joycons[i];
 
@@ -522,6 +523,21 @@ void pollLoop() {
 
 		if (!jc->handle) { continue; }
 
+		if (GetKeyboardTrigger(DIK_V))
+		{
+			jc->rumble(100, 1);
+
+			jc->rumble(10, 3);
+		}
+
+		//if (GetKeyboardPress(DIK_B))
+		//{
+		//	jc->rumble(10, 1);
+		//}
+		//if (GetKeyboardPress(DIK_N))
+		//{
+		//	jc->rumble(10, 2);
+		//}
 
 		if (settings.forcePollUpdate) {
 			// set to be blocking:
@@ -540,11 +556,13 @@ void pollLoop() {
 
 		auto timeSincePoll = std::chrono::duration_cast<std::chrono::microseconds>(tNow - tracker.tPolls[i]);
 
-		// time spent sleeping (0):
+		//// time spent sleeping (0):
 		double timeSincePollMS = timeSincePoll.count() / 1000.0;
 
 		if (timeSincePollMS > (1000.0 / settings.pollsPerSec)) {
 			jc->send_command(0x1E, buf, 0);
+
+			//jc->send_command(0x1E, buf, 0);
 			tracker.tPolls[i] = std::chrono::high_resolution_clock::now();
 		}
 
@@ -571,12 +589,12 @@ void pollLoop() {
 	//}
 
 	// sleep:
-	if (settings.writeCastToFile) {
-		veryAccurateSleep(settings.timeToSleepMS);
-	}
-	else {
-		accurateSleep(settings.timeToSleepMS);
-	}
+	//if (settings.writeCastToFile) {
+	//	veryAccurateSleep(settings.timeToSleepMS);
+	//}
+	//else {
+	//	accurateSleep(settings.timeToSleepMS);
+	//}
 
 
 	if (settings.broadcastMode && joycons.size() == 1) {
@@ -916,4 +934,11 @@ void actuallyQuit() {
 	}
 	// Finalize the hidapi library
 	res = hid_exit();
+}
+
+D3DXVECTOR3 GetJoyconAccel(int num)
+{
+	Joycon *jc = &joycons[num];
+	D3DXVECTOR3 vecTemp = D3DXVECTOR3(jc->accel.x, jc->accel.y, jc->accel.z);
+	return vecTemp;
 }

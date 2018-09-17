@@ -16,6 +16,7 @@
 #include "debugproc.h"
 #endif
 
+
 //*****************************************************************************
 // ƒvƒƒgƒ^ƒCƒvéŒ¾
 //*****************************************************************************
@@ -330,9 +331,19 @@ void Uninit(void)
 //=============================================================================
 void Update(void)
 {
-	pollLoop();
+	{	
+		Debugtimer timer;
+		pollLoop();
+		PrintDebugProc("yJOYCONz\n[%f]\n", timer.End());
+	}
+
 	// XVˆ—
-	SceneManager::Update();
+	{	
+		Debugtimer timer2;
+		SceneManager::Update();
+		PrintDebugProc("yUpdateAtz\n[%f]\n", timer2.End());
+	}
+
 }
 
 //=============================================================================
@@ -346,8 +357,10 @@ void Draw(void)
 	// •`‰æ‚ÌŠJŽn
 	if (SUCCEEDED(g_pD3DDevice->BeginScene()))
 	{
+		Debugtimer timer;
 		// •`‰æˆ—
 		SceneManager::Draw();
+		PrintDebugProc("yDrawAtz\n[%f]\n", timer.End());
 
 		// •`‰æ‚ÌI—¹
 		g_pD3DDevice->EndScene();

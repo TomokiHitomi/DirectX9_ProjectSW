@@ -96,9 +96,6 @@ void CXModel::Draw(D3DXMATRIX mtxWorld)
 	D3DXMATERIAL *pD3DXMat;
 	D3DMATERIAL9 matDef;
 
-	// ラインティングを無効にする
-	pDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
-
 	// ワールドマトリクスの設定
 	pDevice->SetTransform(D3DTS_WORLD, &mtxWorld);
 
@@ -120,7 +117,4 @@ void CXModel::Draw(D3DXMATRIX mtxWorld)
 
 	// マテリアルを元に戻す
 	pDevice->SetMaterial(&matDef);
-
-	// ラインティングを有効にする
-	pDevice->SetRenderState(D3DRS_LIGHTING, TRUE);
 }
