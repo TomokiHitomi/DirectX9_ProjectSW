@@ -115,7 +115,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	UpdateWindow(hWnd);
 
 
-	//std::thread t1(SubLoop);
+	std::thread t1(SubLoop);
 
 	// メッセージループ
 	while (g_bContinue)
@@ -161,8 +161,9 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 				dwExecLastTime = dwCurrentTime;
 
 				// 更新処理
+				JoyconUpdate();
 				Update();
-				pollLoop();
+				//pollLoop();
 
 				// 描画処理
 				Draw();
@@ -175,8 +176,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	// ゲーム終了フラグ
 	EndGame();
 
-	//// スレッド1の処理が終わるまで待機
-	//t1.join();
+	// スレッド1の処理が終わるまで待機
+	t1.join();
 
 	DestroyWindow(hWnd);
 

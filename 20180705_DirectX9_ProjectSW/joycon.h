@@ -32,5 +32,6 @@ void start();
 void pollLoop();
 void actuallyQuit();
 D3DXVECTOR3 GetJoyconAccel(int num);
+void JoyconUpdate(void);
 
 #endif
