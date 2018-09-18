@@ -60,8 +60,8 @@ public:
 	static float GetEyeIner(void) { return s_fEyeIner; }
 	static float GetUpIner(void) { return s_fUpIner; }
 
-	static void SetEye(D3DXVECTOR3 vEye, float fIner);
-	static void SetUp(D3DXVECTOR3 vUp, float fIner);
+	static void SetEye(D3DXVECTOR3 vEye);
+	static void SetUp(D3DXVECTOR3 vUp);
 	static void Set(void);
 	//D3DXMATRIX GetInvRotateMat(D3DXVECTOR3 pos);
 	static D3DXMATRIX GetMtxView(void);

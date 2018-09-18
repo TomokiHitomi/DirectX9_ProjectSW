@@ -1,0 +1,54 @@
+﻿  XTexture.cpp
+c:\users\hitomi\documents\project\directx9_projectsw\20180705_directx9_projectsw\main.h(14): fatal error C1083: include ファイルを開けません。'd3dx9.h':No such file or directory
+  XModel.cpp
+c:\users\hitomi\documents\project\directx9_projectsw\20180705_directx9_projectsw\main.h(14): fatal error C1083: include ファイルを開けません。'd3dx9.h':No such file or directory
+  title.cpp
+c:\users\hitomi\documents\project\directx9_projectsw\20180705_directx9_projectsw\main.h(14): fatal error C1083: include ファイルを開けません。'd3dx9.h':No such file or directory
+  sword.cpp
+c:\users\hitomi\documents\project\directx9_projectsw\20180705_directx9_projectsw\main.h(14): fatal error C1083: include ファイルを開けません。'd3dx9.h':No such file or directory
+  stencil.cpp
+c:\users\hitomi\documents\project\directx9_projectsw\20180705_directx9_projectsw\main.h(14): fatal error C1083: include ファイルを開けません。'd3dx9.h':No such file or directory
+  sound.cpp
+c:\users\hitomi\documents\project\directx9_projectsw\20180705_directx9_projectsw\main.h(14): fatal error C1083: include ファイルを開けません。'd3dx9.h':No such file or directory
+  skydome.cpp
+c:\users\hitomi\documents\project\directx9_projectsw\20180705_directx9_projectsw\main.h(14): fatal error C1083: include ファイルを開けません。'd3dx9.h':No such file or directory
+  SkinMeshX.cpp
+c:\users\hitomi\documents\project\directx9_projectsw\20180705_directx9_projectsw\main.h(14): fatal error C1083: include ファイルを開けません。'd3dx9.h':No such file or directory
+  scene.cpp
+c:\users\hitomi\documents\project\directx9_projectsw\20180705_directx9_projectsw\main.h(14): fatal error C1083: include ファイルを開けません。'd3dx9.h':No such file or directory
+  result.cpp
+c:\users\hitomi\documents\project\directx9_projectsw\20180705_directx9_projectsw\main.h(14): fatal error C1083: include ファイルを開けません。'd3dx9.h':No such file or directory
+  player.cpp
+c:\users\hitomi\documents\project\directx9_projectsw\20180705_directx9_projectsw\main.h(14): fatal error C1083: include ファイルを開けません。'd3dx9.h':No such file or directory
+  object.cpp
+c:\users\hitomi\documents\project\directx9_projectsw\20180705_directx9_projectsw\main.h(14): fatal error C1083: include ファイルを開けません。'd3dx9.h':No such file or directory
+  main.cpp
+c:\users\hitomi\documents\project\directx9_projectsw\20180705_directx9_projectsw\main.h(14): fatal error C1083: include ファイルを開けません。'd3dx9.h':No such file or directory
+  light.cpp
+c:\users\hitomi\documents\project\directx9_projectsw\20180705_directx9_projectsw\light.cpp : warning C4819: ファイルは、現在のコード ページ (932) で表示できない文字を含んでいます。データの損失を防ぐために、ファイルを Unicode 形式で保存してください。
+c:\users\hitomi\documents\project\directx9_projectsw\20180705_directx9_projectsw\main.h(14): fatal error C1083: include ファイルを開けません。'd3dx9.h':No such file or directory
+  joycon.cpp
+c:\users\hitomi\documents\project\directx9_projectsw\20180705_directx9_projectsw\main.h(14): fatal error C1083: include ファイルを開けません。'd3dx9.h':No such file or directory
+  input.cpp
+c:\users\hitomi\documents\project\directx9_projectsw\20180705_directx9_projectsw\main.h(14): fatal error C1083: include ファイルを開けません。'd3dx9.h':No such file or directory
+  game.cpp
+c:\users\hitomi\documents\project\directx9_projectsw\20180705_directx9_projectsw\main.h(14): fatal error C1083: include ファイルを開けません。'd3dx9.h':No such file or directory
+  fade.cpp
+c:\users\hitomi\documents\project\directx9_projectsw\20180705_directx9_projectsw\main.h(14): fatal error C1083: include ファイルを開けません。'd3dx9.h':No such file or directory
+  debugproc.cpp
+c:\users\hitomi\documents\project\directx9_projectsw\20180705_directx9_projectsw\main.h(14): fatal error C1083: include ファイルを開けません。'd3dx9.h':No such file or directory
+  cube.cpp
+c:\users\hitomi\documents\project\directx9_projectsw\20180705_directx9_projectsw\main.h(14): fatal error C1083: include ファイルを開けません。'd3dx9.h':No such file or directory
+  コードを生成中...
+  コンパイル中...
+  copyright.cpp
+c:\users\hitomi\documents\project\directx9_projectsw\20180705_directx9_projectsw\main.h(14): fatal error C1083: include ファイルを開けません。'd3dx9.h':No such file or directory
+  collision.cpp
+c:\users\hitomi\documents\project\directx9_projectsw\20180705_directx9_projectsw\main.h(14): fatal error C1083: include ファイルを開けません。'd3dx9.h':No such file or directory
+  camera.cpp
+c:\users\hitomi\documents\project\directx9_projectsw\20180705_directx9_projectsw\main.h(14): fatal error C1083: include ファイルを開けません。'd3dx9.h':No such file or directory
+  calculate.cpp
+c:\users\hitomi\documents\project\directx9_projectsw\20180705_directx9_projectsw\main.h(14): fatal error C1083: include ファイルを開けません。'd3dx9.h':No such file or directory
+  air_water_frame.cpp
+c:\users\hitomi\documents\project\directx9_projectsw\20180705_directx9_projectsw\main.h(14): fatal error C1083: include ファイルを開けません。'd3dx9.h':No such file or directory
+  コードを生成中...

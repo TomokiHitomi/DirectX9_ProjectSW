@@ -38,13 +38,6 @@ LPDIRECT3DDEVICE9	g_pD3DDevice = NULL;	// デバイスオブジェクト(描画に必要)
 int					g_nCountFPS = 0;		// FPSカウンタ
 bool				g_bContinue = true;		// ゲーム継続フラグ
 
-DWORD dwExecLastTime;
-DWORD dwFPSLastTime;
-DWORD dwCurrentTime;
-DWORD dwFrameCount;
-MSG msg;
-
-
 //=============================================================================
 // メイン関数
 //=============================================================================
@@ -53,6 +46,10 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	UNREFERENCED_PARAMETER(hPrevInstance);	// 無くても良いけど、警告が出る（未使用宣言）
 	UNREFERENCED_PARAMETER(lpCmdLine);		// 無くても良いけど、警告が出る（未使用宣言）
 
+	DWORD dwExecLastTime;
+	DWORD dwFPSLastTime;
+	DWORD dwCurrentTime;
+	DWORD dwFrameCount;
 
 	WNDCLASSEX wcex =
 	{
@@ -69,7 +66,9 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		CLASS_NAME,											// クラス名
 		NULL												// アイコン16x16
 	};
+
 	HWND hWnd;
+	MSG msg;
 
 	// ウィンドウクラスの登録
 	RegisterClassEx(&wcex);
@@ -116,7 +115,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	UpdateWindow(hWnd);
 
 
-	std::thread t1(SubLoop);
+	//std::thread t1(SubLoop);
 
 	// メッセージループ
 	while (g_bContinue)
@@ -163,6 +162,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
 				// 更新処理
 				Update();
+				pollLoop();
 
 				// 描画処理
 				Draw();
@@ -175,8 +175,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	// ゲーム終了フラグ
 	EndGame();
 
-	// スレッド1の処理が終わるまで待機
-	t1.join();
+	//// スレッド1の処理が終わるまで待機
+	//t1.join();
 
 	DestroyWindow(hWnd);
 

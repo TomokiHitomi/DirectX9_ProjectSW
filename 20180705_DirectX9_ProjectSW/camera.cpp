@@ -176,7 +176,6 @@ void Camera::Set(void)
 	// ビューマトリクスの設定
 	pDevice->SetTransform(D3DTS_VIEW, &s_mtxView);
 
-
 	/******************** プロジェクション変換 ********************/
 	// プロジェクションマトリクスの初期化
 	D3DXMatrixIdentity(&s_mtxProjection);

@@ -14,7 +14,6 @@
 /.DS_Store
 
 # 特定のディレクトリを無視する場合は先頭と末尾に/を付ける
-/Debug/
-/Release/
+/x64/
 /20180705_DirectX9_ProjectSW/Debug/
 /20180705_DirectX9_ProjectSW/Release/
