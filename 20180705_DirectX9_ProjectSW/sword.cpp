@@ -12,6 +12,7 @@
 #include "player.h"
 #include "cube.h"
 #include "collision.h"
+#include "joycon.h"
 
 // デバッグ用
 #ifdef _DEBUG
@@ -113,13 +114,13 @@ void Sword::Update(void)
 		posTemp = D3DXVECTOR3(mtxTemp._41, mtxTemp._42, mtxTemp._43);
 		posTarget = pCube->GetPos();
 
-		if (IsMobUseLeftTriggered())
+		if (IsMobUseLeftTriggered() || JcTriggered(0, JC_R_BUTTON_ZR))
 		{
 			//m_eMode = Sword::SHOT;
 			Shot();
 		}
 
-		if (IsMobUseRightTriggered())
+		if (IsMobUseRightTriggered() || JcTriggered(0, JC_R_BUTTON_R))
 		{
 			//StayAll();
 			RetrunAll();

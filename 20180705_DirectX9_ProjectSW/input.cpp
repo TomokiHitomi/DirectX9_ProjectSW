@@ -61,7 +61,7 @@ int						g_keyStateRepeatCnt[NUM_KEY_MAX];	// キーボードのリピートカウンタ
 static LPDIRECTINPUTDEVICE8 pMobUse = NULL; // mobUse
 
 static DIMOUSESTATE2	mobUseState;		// マウスのダイレクトな状態
-static DIMOUSESTATE2	mobUseTrigger;	// 押された瞬間だけON
+static DIMOUSESTATE2	mobUseTrigger;		// 押された瞬間だけON
 static int				g_nMobCount;
 										//--------------------------------- game pad
 

@@ -39,6 +39,11 @@ std::vector<Joycon> joycons;
 unsigned char buf[65];
 int res = 0;
 
+// Joycon情報（複数対応）
+static DWORD			g_dwJcState[JOYCON_MAX];
+static DWORD			g_dwJcTrigger[JOYCON_MAX];
+static DWORD			g_dwJcRelease[JOYCON_MAX];
+
 // sio:
 //sio::client myClient;
 
@@ -935,10 +940,17 @@ void actuallyQuit() {
 	res = hid_exit();
 }
 
-D3DXVECTOR3 GetJoyconAccel(int num)
+D3DXVECTOR3 GetJoyconAccel(int jcNo)
 {
-	Joycon *jc = &joycons[num];
+	Joycon *jc = &joycons[jcNo];
 	D3DXVECTOR3 vecTemp = D3DXVECTOR3(jc->accel.x, jc->accel.y, jc->accel.z);
+	return vecTemp;
+}
+
+D3DXVECTOR3 GetJoyconGyro(int jcNo)
+{
+	Joycon *jc = &joycons[jcNo];
+	D3DXVECTOR3 vecTemp = D3DXVECTOR3(jc->gyro.roll, jc->gyro.pitch, jc->gyro.yaw);
 	return vecTemp;
 }
 
@@ -950,16 +962,53 @@ void JoyconUpdate(void)
 	// Joyconの数だけ繰り返し処理
 	for (int i = 0; i < size; i++)
 	{
+		DWORD lastJcState;
+		lastJcState = g_dwJcState[i];
+		g_dwJcState[i] = 0x00000000l;	// 初期化
 		Joycon *jc = &joycons[i];
 		// left:
 		if (jc->left_right == 1)
 		{
+			//* ↑ボタン
+			if (jc->btns.up)						g_dwJcState[i] |= JC_L_BUTTON_UP;
+			//* ↓ボタン
+			if (jc->btns.down)						g_dwJcState[i] |= JC_L_BUTTON_DOWN;
+			//* ←ボタン
+			if (jc->btns.left)						g_dwJcState[i] |= JC_L_BUTTON_LEFT;
+			//* →ボタン
+			if (jc->btns.right)						g_dwJcState[i] |= JC_L_BUTTON_RIGHT;
+
+			//* Ｌボタン
+			if (jc->btns.l)							g_dwJcState[i] |= JC_L_BUTTON_L;
+			//* ＺＬボタン
+			if (jc->btns.zl)						g_dwJcState[i] |= JC_L_BUTTON_ZL;
+			//* ＳＬボタン
+			if (jc->btns.sl)						g_dwJcState[i] |= JC_L_BUTTON_SL;
+			//* ＳＲボタン
+			if (jc->btns.sr)						g_dwJcState[i] |= JC_L_BUTTON_SR;
+			//* －ボタン
+			if (jc->btns.minus)						g_dwJcState[i] |= JC_L_BUTTON_MINUS;
+			//* キャプチャボタン
+			if (jc->btns.capture)					g_dwJcState[i] |= JC_L_BUTTON_CAP;
+			//* スティックボタン
+			if (jc->btns.stick_button)				g_dwJcState[i] |= JC_L_BUTTON_STICK;
+
+			//* ↑スティック
+			if (jc->stick.CalY > JC_STICK_MARGIN)	g_dwJcState[i] |= JC_L_STICK_UP;
+			//* ↓スティック
+			if (jc->stick.CalY < -JC_STICK_MARGIN)	g_dwJcState[i] |= JC_L_STICK_DOWN;
+			//* ←スティック
+			if (jc->stick.CalX < -JC_STICK_MARGIN)	g_dwJcState[i] |= JC_L_STICK_LEFT;
+			//* →スティック
+			if (jc->stick.CalX > JC_STICK_MARGIN)	g_dwJcState[i] |= JC_L_STICK_RIGHT;
+
+
 #ifdef _DEBUG
 			PrintDebugProc("【Joy-Con Left】\n");
 
 			PrintDebugProc("U: %d D: %d L: %d R: %d LL: %d ZL: %d SB: %d SL: %d SR: %d M: %d C: %d SX: %f SY: %f GR: %d GP: %d GY: %d\n", \
 				jc->btns.up, jc->btns.down, jc->btns.left, jc->btns.right, jc->btns.l, jc->btns.zl, jc->btns.stick_button, jc->btns.sl, jc->btns.sr, \
-				jc->btns.minus, jc->btns.capture, (jc->stick.CalX + 1), (jc->stick.CalY + 1), (int)jc->gyro.roll, (int)jc->gyro.pitch, (int)jc->gyro.yaw);
+				jc->btns.minus, jc->btns.capture, (jc->stick.CalX), (jc->stick.CalY), (int)jc->gyro.roll, (int)jc->gyro.pitch, (int)jc->gyro.yaw);
 			PrintDebugProc("Accel[X:%f Y:%f Z:%f]\n", jc->accel.x, jc->accel.y, jc->accel.z);
 			PrintDebugProc("Gyro [R:%f P:%f Y:%f]\n", jc->gyro.roll, jc->gyro.pitch, jc->gyro.yaw);
 #endif
@@ -968,6 +1017,56 @@ void JoyconUpdate(void)
 		// right:
 		if (jc->left_right == 2)
 		{
+			//* ↑ボタン
+			if (jc->btns.a)							g_dwJcState[i] |= JC_R_BUTTON_A;
+			//* ↓ボタン
+			if (jc->btns.b)							g_dwJcState[i] |= JC_R_BUTTON_B;
+			//* ←ボタン
+			if (jc->btns.x)							g_dwJcState[i] |= JC_R_BUTTON_X;
+			//* →ボタン
+			if (jc->btns.y)							g_dwJcState[i] |= JC_R_BUTTON_Y;
+
+			//* Ｒボタン
+			if (jc->btns.r)							g_dwJcState[i] |= JC_R_BUTTON_R;
+			//* ＺＲボタン
+			if (jc->btns.zr)						g_dwJcState[i] |= JC_R_BUTTON_ZR;
+			//* ＳＬボタン
+			if (jc->btns.sl)						g_dwJcState[i] |= JC_R_BUTTON_SL;
+			//* ＳＲボタン
+			if (jc->btns.sr)						g_dwJcState[i] |= JC_R_BUTTON_SR;
+			//* ＋ボタン
+			if (jc->btns.plus)						g_dwJcState[i] |= JC_R_BUTTON_PLUS;
+			//* ホームボタン
+			if (jc->btns.home)						g_dwJcState[i] |= JC_R_BUTTON_HOME;
+			//* スティックボタン
+			if (jc->btns.stick_button)				g_dwJcState[i] |= JC_R_BUTTON_STICK;
+
+			//* ↑スティック
+			if (jc->stick.CalY > JC_STICK_MARGIN)	g_dwJcState[i] |= JC_R_STICK_UP;
+			//* ↓スティック
+			if (jc->stick.CalY < -JC_STICK_MARGIN)	g_dwJcState[i] |= JC_R_STICK_DOWN;
+			//* ←スティック
+			if (jc->stick.CalX < -JC_STICK_MARGIN)	g_dwJcState[i] |= JC_R_STICK_LEFT;
+			//* →スティック
+			if (jc->stick.CalX > JC_STICK_MARGIN)	g_dwJcState[i] |= JC_R_STICK_RIGHT;
+
+
+
+
+			//jc->btns.y = (jc->buttons & (1 << 0)) ? 1 : 0;
+			//jc->btns.x = (jc->buttons & (1 << 1)) ? 1 : 0;
+			//jc->btns.b = (jc->buttons & (1 << 2)) ? 1 : 0;
+			//jc->btns.a = (jc->buttons & (1 << 3)) ? 1 : 0;
+			//jc->btns.sr = (jc->buttons & (1 << 4)) ? 1 : 0;
+			//jc->btns.sl = (jc->buttons & (1 << 5)) ? 1 : 0;
+			//jc->btns.r = (jc->buttons & (1 << 6)) ? 1 : 0;
+			//jc->btns.zr = (jc->buttons & (1 << 7)) ? 1 : 0;
+			//jc->btns.plus = (jc->buttons & (1 << 9)) ? 1 : 0;
+			//jc->btns.stick_button = (jc->buttons & (1 << 10)) ? 1 : 0;
+			//jc->btns.home = (jc->buttons & (1 << 12)) ? 1 : 0;
+
+
+
 #ifdef _DEBUG
 			PrintDebugProc("【Joy-Con Right】\n");
 
@@ -978,5 +1077,27 @@ void JoyconUpdate(void)
 			PrintDebugProc("Gyro [R:%f P:%f Y:%f]\n", jc->gyro.roll, jc->gyro.pitch, jc->gyro.yaw);
 #endif
 		}
+
+		// Trigger設定
+		g_dwJcTrigger[i] = ((lastJcState ^ g_dwJcState[i])	// 前回と違っていて
+			& g_dwJcState[i]);					// しかも今ONのやつ
+											// Release設定
+		g_dwJcRelease[i] = ((lastJcState ^ g_dwJcState[i])	// 前回と違っていて
+			& ~g_dwJcState[i]);					// しかも今OFFのやつ
 	}
+}
+
+BOOL JcPressed(int jcNo, DWORD button)
+{
+	return (button & g_dwJcState[jcNo]);
+}
+
+BOOL JcTriggered(int jcNo, DWORD button)
+{
+	return (button & g_dwJcTrigger[jcNo]);
+}
+
+BOOL JcReleased(int jcNo, DWORD button)
+{
+	return (button & g_dwJcRelease[jcNo]);
 }
